@@ -1,0 +1,40 @@
+from argparse import ArgumentParser
+from datetime import datetime
+from typing import Optional
+
+import datasets
+import numpy as np
+import pytorch_lightning as pl
+import torch
+from torch.utils.data import DataLoader
+from transformers import (
+    AdamW,
+    AutoModelForSequenceClassification,
+    AutoConfig,
+    AutoTokenizer,
+    get_linear_schedule_with_warmup,
+    glue_compute_metrics
+)
+
+from gr.src.models.BERT import BERT
+from gr.src.data.data_module import DataModule
+
+
+
+def parse_args(args=None):
+    parser = ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    parser = DataModule.add_argparse_args(parser)
+    parser = BERT.add_model_specific_args(parser)
+    parser.add_argument('--seed', type=int, default=42)
+    return parser.parse_args(args)
+
+
+def main(args):
+    pl.seed_everything(args.seed)
+    dm = DataModule.from_argparse_args(args)
+    dm.prepare_data()
+    dm.setup('fit')
+    model = BERT(num_labels=dm.num_labels, eval_splits=dm.eval_splits, **vars(args))
+    trainer = pl.Trainer.from_argparse_args(args)
+    return dm, model, trainer

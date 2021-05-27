@@ -1,0 +1,10 @@
+# local package
+-e .
+# project-specific requirements
+numpy
+torch
+torchvision
+pytorch-lightning
+nltk
+transformers
+datasets==1.0.1
