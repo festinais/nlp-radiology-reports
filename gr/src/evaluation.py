@@ -16,8 +16,11 @@ from transformers import (
     glue_compute_metrics
 )
 
-from gr.src.models.BERT import BERT
-from gr.src.data.data_module import DataModule
+
+
+from src.models.transformer import BERT
+from src.data.data_module import DataModule
+
 
 
 

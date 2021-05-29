@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/content/nlp-radiology-reports/gr')
+
 mocked_args = """
     --model_name_or_path distilbert-base-cased
     --task_name mrpc
