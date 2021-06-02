@@ -17,11 +17,8 @@ from transformers import (
 )
 
 
-
 from src.models.transformer import BERT
 from src.data.data_module import DataModule
-
-
 
 
 def parse_args(args=None):
