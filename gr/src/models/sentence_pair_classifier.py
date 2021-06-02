@@ -54,8 +54,8 @@ class SentencePairClassifier(pl.LightningModule):
         self.train_accuracy = pl.metrics.Accuracy()
         self.val_accuracy = pl.metrics.Accuracy()
 
-    def forward(self, **inputs):
-        return self.model(**inputs)
+    def forward(self, x):
+        return self.model(x)
 
     def training_step(self, batch, batch_idx):
         outputs = self(**batch)
