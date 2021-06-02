@@ -17,7 +17,7 @@ from transformers import (
 )
 
 
-from src.models.transformer import BERT
+from src.models.sentence_pair_classifier import SentencePairClassifier
 from src.data.data_module import DataModule
 
 
@@ -25,7 +25,7 @@ def parse_args(args=None):
     parser = ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
     parser = DataModule.add_argparse_args(parser)
-    parser = BERT.add_model_specific_args(parser)
+    parser = SentencePairClassifier.add_model_specific_args(parser)
     parser.add_argument('--seed', type=int, default=42)
     return parser.parse_args(args)
 
