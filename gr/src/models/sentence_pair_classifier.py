@@ -75,7 +75,7 @@ class SentencePairClassifier(pl.LightningModule):
         labels = batch["labels"]
         loss, outputs = self(input_ids, attention_mask, labels)
         self.log("val_loss", loss, prog_bar=True, logger=True)
-        return loss
+        return {"loss": loss, "predictions": outputs, "labels": labels}
 
     def test_step(self, batch, batch_idx):
         input_ids = batch["input_ids"]
