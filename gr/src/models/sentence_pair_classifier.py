@@ -102,6 +102,18 @@ class SentencePairClassifier(pl.LightningModule):
         self.log_dict(self.metric.compute(predictions=preds, references=labels), prog_bar=True)
         return loss
 
+    def setup(self, stage):
+        if stage == 'fit':
+            # Get dataloader by calling it - train_dataloader() is called after setup() by default
+            train_loader = self.train_dataloader()
+
+            # Calculate total steps
+            self.total_steps = (
+                    (len(train_loader.dataset) // (self.hparams.train_batch_size * max(1, self.hparams.gpus)))
+                    // self.hparams.accumulate_grad_batches
+                    * float(self.hparams.max_epochs)
+            )
+
     def configure_optimizers(self):
         "Prepare optimizer and schedule (linear warmup and decay)"
         model = self.model
