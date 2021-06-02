@@ -55,7 +55,7 @@ class SentencePairClassifier(pl.LightningModule):
         self.val_accuracy = pl.metrics.Accuracy()
 
     def forward(self, input_ids, attn_masks, token_type_ids, labels):
-        return self.model(input_ids, attn_masks, token_type_ids, labels=labels)
+        return self.model(input_ids, attn_masks, token_type_ids, labels)
         # features = self.classifier(self.dropout(pooler_output))
         # return features
 
