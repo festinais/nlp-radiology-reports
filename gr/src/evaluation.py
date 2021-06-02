@@ -35,6 +35,6 @@ def main(args):
     dm = DataModule.from_argparse_args(args)
     dm.prepare_data()
     dm.setup('fit')
-    model = BERT(num_labels=dm.num_labels, eval_splits=dm.eval_splits, **vars(args))
+    model = SentencePairClassifier(num_labels=dm.num_labels, eval_splits=dm.eval_splits, **vars(args))
     trainer = pl.Trainer.from_argparse_args(args)
     return dm, model, trainer
