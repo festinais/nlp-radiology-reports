@@ -60,14 +60,9 @@ class SentencePairClassifier(pl.LightningModule):
         return features
 
     def training_step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        token_type_ids = batch["token_type_ids"]
-        labels = batch["labels"]
-
-        loss, outputs = self(input_ids, attention_mask, labels)
-        self.log("train_loss", loss, prog_bar=True, logger=True)
-        return {"loss": loss, "predictions": outputs, "labels": labels}
+        outputs = self(**batch)
+        loss = outputs[0]
+        return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
         input_ids = batch["input_ids"]
