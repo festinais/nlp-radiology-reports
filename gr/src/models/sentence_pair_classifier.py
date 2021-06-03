@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from datetime import datetime
 from typing import Optional
-import torch.nn as nn
+
 import datasets
 import numpy as np
 import pytorch_lightning as pl
@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from transformers import (
     AdamW,
-    AutoModel,
+    AutoModelForSequenceClassification,
     AutoConfig,
     AutoTokenizer,
     get_linear_schedule_with_warmup,
@@ -29,65 +29,54 @@ class SentencePairClassifier(pl.LightningModule):
             train_batch_size: int = 32,
             eval_batch_size: int = 32,
             eval_splits: Optional[list] = None,
-            freeze_bert=False,
-            n_classes=2,
-            steps_per_epoch=None,
-            n_epochs=None,
             **kwargs
     ):
         super().__init__()
 
         self.save_hyperparameters()
-        self.config = AutoConfig.from_pretrained(model_name_or_path, num_labels=num_labels)
-        self.model = AutoModel.from_pretrained(model_name_or_path, config=self.config)
 
-        self.classifier = nn.Linear(self.model.config.hidden_size, n_classes)
-        self.dropout = nn.Dropout(p=0.1)
-        self.steps_per_epoch = steps_per_epoch
-        self.n_epochs = n_epochs
+        self.config = AutoConfig.from_pretrained(model_name_or_path, num_labels=num_labels)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name_or_path, config=self.config)
         self.metric = datasets.load_metric(
             'glue',
             self.hparams.task_name,
             experiment_id=datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         )
-        # Metrics
-        self.train_accuracy = pl.metrics.Accuracy()
-        self.val_accuracy = pl.metrics.Accuracy()
 
-    def forward(self, x):
-        return self.model(x)
+    def forward(self, **inputs):
+        return self.model(**inputs)
 
     def training_step(self, batch, batch_idx):
         outputs = self(**batch)
         loss = outputs[0]
-        return {"loss": loss}
-
-    def validation_step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
-        loss, outputs = self(input_ids, attention_mask, labels)
-        self.log("val_loss", loss, prog_bar=True, logger=True)
-        return {"loss": loss, "predictions": outputs, "labels": labels}
-
-    def test_step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
-        loss, outputs = self(input_ids, attention_mask, labels)
-        self.log("test_loss", loss, prog_bar=True, logger=True)
         return loss
 
-    def training_epoch_end(self, outputs):
-        # Option 2
-        # We can directly implement the method ".compute()" from the accuracy function
-        accuracy = self.train_accuracy.compute()
-        # print(f"Train Accuracy: {accuracy}")
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
+        outputs = self(**batch)
+        val_loss, logits = outputs[:2]
 
-        # Save the metric
-        self.log('Train_acc_epoch', accuracy, prog_bar=True)
+        if self.hparams.num_labels >= 1:
+            preds = torch.argmax(logits, axis=1)
+        elif self.hparams.num_labels == 1:
+            preds = logits.squeeze()
+
+        labels = batch["labels"]
+
+        return {'loss': val_loss, "preds": preds, "labels": labels}
 
     def validation_epoch_end(self, outputs):
+        if self.hparams.task_name == 'mnli':
+            for i, output in enumerate(outputs):
+                # matched or mismatched
+                split = self.hparams.eval_splits[i].split('_')[-1]
+                preds = torch.cat([x['preds'] for x in output]).detach().cpu().numpy()
+                labels = torch.cat([x['labels'] for x in output]).detach().cpu().numpy()
+                loss = torch.stack([x['loss'] for x in output]).mean()
+                self.log(f'val_loss_{split}', loss, prog_bar=True)
+                split_metrics = {f"{k}_{split}": v for k, v in self.metric.compute(predictions=preds, references=labels).items()}
+                self.log_dict(split_metrics, prog_bar=True)
+            return loss
+
         preds = torch.cat([x['preds'] for x in outputs]).detach().cpu().numpy()
         labels = torch.cat([x['labels'] for x in outputs]).detach().cpu().numpy()
         loss = torch.stack([x['loss'] for x in outputs]).mean()
@@ -102,9 +91,9 @@ class SentencePairClassifier(pl.LightningModule):
 
             # Calculate total steps
             self.total_steps = (
-                    (len(train_loader.dataset) // (self.hparams.train_batch_size * max(1, self.hparams.gpus)))
-                    // self.hparams.accumulate_grad_batches
-                    * float(self.hparams.max_epochs)
+                (len(train_loader.dataset) // (self.hparams.train_batch_size * max(1, self.hparams.gpus)))
+                // self.hparams.accumulate_grad_batches
+                * float(self.hparams.max_epochs)
             )
 
     def configure_optimizers(self):
