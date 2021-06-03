@@ -123,7 +123,7 @@ def main():
 
     # get the data
     df_train, df_val, df_test = get_data()
-    train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val)
+    train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)
 
     criterion = nn.BCEWithLogitsLoss()
     opti = AdamW(net.parameters(), lr=float(get_yaml_parameter("lr")), weight_decay=1e-2)
