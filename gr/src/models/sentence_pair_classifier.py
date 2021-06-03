@@ -65,18 +65,6 @@ class SentencePairClassifier(pl.LightningModule):
         return {'loss': val_loss, "preds": preds, "labels": labels}
 
     def validation_epoch_end(self, outputs):
-        if self.hparams.task_name == 'mnli':
-            for i, output in enumerate(outputs):
-                # matched or mismatched
-                split = self.hparams.eval_splits[i].split('_')[-1]
-                preds = torch.cat([x['preds'] for x in output]).detach().cpu().numpy()
-                labels = torch.cat([x['labels'] for x in output]).detach().cpu().numpy()
-                loss = torch.stack([x['loss'] for x in output]).mean()
-                self.log(f'val_loss_{split}', loss, prog_bar=True)
-                split_metrics = {f"{k}_{split}": v for k, v in self.metric.compute(predictions=preds, references=labels).items()}
-                self.log_dict(split_metrics, prog_bar=True)
-            return loss
-
         preds = torch.cat([x['preds'] for x in outputs]).detach().cpu().numpy()
         labels = torch.cat([x['labels'] for x in outputs]).detach().cpu().numpy()
         loss = torch.stack([x['loss'] for x in outputs]).mean()

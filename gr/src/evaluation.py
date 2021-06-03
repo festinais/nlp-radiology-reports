@@ -15,6 +15,8 @@ from transformers import (
     get_linear_schedule_with_warmup,
     glue_compute_metrics
 )
+from pytorch_lightning.loggers import TensorBoardLogger
+
 
 
 from src.models.sentence_pair_classifier import SentencePairClassifier
@@ -36,5 +38,6 @@ def main(args):
     dm.prepare_data()
     dm.setup('fit')
     model = SentencePairClassifier(num_labels=dm.num_labels, eval_splits=dm.eval_splits, **vars(args))
-    trainer = pl.Trainer.from_argparse_args(args)
+    logger = TensorBoardLogger("tb_logs", name="my_model")
+    trainer = pl.Trainer.from_argparse_args(args, logger=logger)
     return dm, model, trainer
