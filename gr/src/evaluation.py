@@ -107,7 +107,8 @@ def evaluate(path_to_output_file, df_test):
     metric = load_metric("glue", "mrpc")
 
     # Compute the accuracy and F1 scores
-    metric._compute(predictions=preds_test, references=labels_test)
+    score = metric.compute(predictions=preds_test, references=labels_test)
+    return score
 
 
 def main():
@@ -172,7 +173,8 @@ def main():
     print("Predictions are available in : {}".format(path_to_output_file))
 
     # evaluate the model accuracy
-    evaluate(path_to_output_file, df_test)
+    score = evaluate(path_to_output_file, df_test)
+    print(score)
 
 
 if __name__ == "__main__":
