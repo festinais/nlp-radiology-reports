@@ -1,10 +1,11 @@
 # local package
 -e .
 # project-specific requirements
-numpy
-torch
-torchvision
-pytorch-lightning
-nltk
+datasets
 transformers
-datasets==1.0.1
+gputil
+psutil
+humanize
+torch
+numpy
+tqdm
