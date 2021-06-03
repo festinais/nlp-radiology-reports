@@ -8,7 +8,7 @@ class SentencePairClassifier(nn.Module):
     def __init__(self, bert_model="albert-base-v2", freeze_bert=False):
         super(SentencePairClassifier, self).__init__()
         #  Instantiating BERT-based model object
-        self.bert_layer = AutoModel.from_pretrained(bert_model)
+        self.bert_layer = AutoModel.from_pretrained(bert_model, return_dict=False)
         self.bert_model = bert_model
         # Fix the hidden-state size of the encoder outputs
         # (If you want to add other pre-trained models here, search for the encoder output size)
