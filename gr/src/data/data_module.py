@@ -22,8 +22,8 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
 
         # Selecting sentence1 and sentence2 at the specified index in the data frame
-        sent1 = str(self.data.loc[index, 'sentence1'])
-        sent2 = str(self.data.loc[index, 'sentence2'])
+        sent1 = str(self.data.loc[index, 'section_one'])
+        sent2 = str(self.data.loc[index, 'section_two'])
 
         # Tokenize the pair of sentences to get token ids, attention masks and token type ids
         encoded_pair = self.tokenizer(sent1, sent2,

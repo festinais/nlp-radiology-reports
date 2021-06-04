@@ -1,31 +1,51 @@
-import torch
-import torch.nn as nn
+import csv
+import glob
 import os
 import random
+import re
+
 import numpy as np
 import pandas as pd
-from torch.utils.data import DataLoader
-from transformers import AdamW, get_linear_schedule_with_warmup
-from datasets import load_dataset, load_metric
+import torch
+import torch.nn as nn
 from data.data_module import CustomDataset
-from utils.parameters import get_yaml_parameter
+from datasets import load_metric
 from models.sentence_pair_classifier import SentencePairClassifier
-from train import train_bert
+from torch.utils.data import DataLoader
 from tqdm import tqdm
-import glob
+from train import train_bert
+from transformers import AdamW, get_linear_schedule_with_warmup
+from utils.parameters import get_yaml_parameter
+from datasets import load_dataset
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('glue', 'mrpc')
-    split = dataset['train'].train_test_split(test_size=0.1, seed=1)  # split the original training data for validation
-    train = split['train']  # 90 % of the original training data
-    val = split['test']  # 10 % of the original training data
-    test = dataset[
-        'validation']
+    documents = []
+    for filename in os.listdir('../data'):
+        if filename.endswith('.txt'):
+            print(filename)
+            with open(os.path.join('../data', filename)) as f:
+                content = f.read()
+                content = content.replace("\n", "")
+                sections = re.split(r'Diagnosenschlüssel:', content)
+                documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
 
-    # Transform data into pandas dataframes
+    with open('../data/data.csv', 'w+') as output:
+        writer = csv.writer(output)
+        writer.writerow(['section_one', 'section_two', 'label'])
+        writer.writerows(documents)
+
+    dataset = load_dataset('csv', data_files='../data/data.csv')
+
+    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    train = split['train']
+    test = split['test']
+
+    split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+    val = split_val['train']
+
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
