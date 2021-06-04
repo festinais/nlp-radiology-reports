@@ -37,7 +37,7 @@ def get_data():
         writer.writerow(['section_one', 'section_two', 'label'])
         writer.writerows(documents)
 
-    dataset = load_dataset('csv', data_files='../data/data.csv')
+    dataset = load_dataset('csv', data_files='gr/data/data.csv')
 
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
