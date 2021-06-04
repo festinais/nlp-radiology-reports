@@ -23,16 +23,16 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def get_data():
     documents = []
-    for filename in os.listdir('../data'):
+    for filename in os.listdir('gr/data'):
         if filename.endswith('.txt'):
             print(filename)
-            with open(os.path.join('../data', filename)) as f:
+            with open(os.path.join('gr/data', filename)) as f:
                 content = f.read()
                 content = content.replace("\n", "")
                 sections = re.split(r'Diagnosenschlüssel:', content)
                 documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
 
-    with open('../data/data.csv', 'w+') as output:
+    with open('gr/data/data.csv', 'w+') as output:
         writer = csv.writer(output)
         writer.writerow(['section_one', 'section_two', 'label'])
         writer.writerows(documents)
