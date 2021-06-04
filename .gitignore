@@ -1,3 +1,8 @@
 .idea/
 venv/
 gr/venv/
+# exclude everything
+gr/data/*
+
+# exception to the rule
+!gr/data/.gitkeep
