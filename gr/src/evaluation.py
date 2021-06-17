@@ -17,6 +17,7 @@ from train import train_bert
 from transformers import AdamW, get_linear_schedule_with_warmup
 from utils.parameters import get_yaml_parameter
 from datasets import load_dataset
+from transformers import AutoTokenizer
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -38,7 +39,6 @@ def get_data():
         writer.writerows(documents)
 
     dataset = load_dataset('csv', data_files='gr/data/data.csv')
-
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
     test = split['test']
@@ -49,24 +49,72 @@ def get_data():
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
+
+    print('{0} {1} length'.format(df_train.shape, 'train'))
+    print('{0} {1} length'.format(df_val.shape, 'validation'))
+    print('{0} {1} length'.format(df_test.shape, 'test'))
     return df_train, df_val, df_test
+
+
+def collate_fn(batch):
+    tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
+    maxlen = get_yaml_parameter("maxlen")
+
+    token_ids, attn_masks, token_type_ids, labels = [], [], [], []
+
+    for index, tuple in enumerate(batch):
+        sent1 = tuple[0]
+        sent2 = tuple[1]
+
+        labels.append(torch.tensor(tuple[2]))
+        # Tokenize the pair of sentences to get token ids, attention masks and token type ids
+        encoded_pair = tokenizer(sent1, sent2,
+                                 padding='max_length',  # Pad to max_length
+                                 truncation=True,  # Truncate to max_length
+                                 max_length=maxlen,
+                                 return_tensors='pt')  # Return torch.Tensor objects
+
+        token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
+        attn_masks.append(encoded_pair['attention_mask'].squeeze(0))  # binary tensor with "0" for padded values and "1" for the other values
+        token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
+
+        #negative sampling
+        if index == len(batch) - 1:
+            index = -1
+            sent3 = batch[index+1][1]
+        else:
+            sent3 = batch[index + 1][1]
+        label = torch.tensor(0)
+
+        labels.append(label)
+        encoded_pair = tokenizer(sent1, sent3,
+                                 padding='max_length',  # Pad to max_length
+                                 truncation=True,  # Truncate to max_length
+                                 max_length=maxlen,
+                                 return_tensors='pt')  # Return torch.Tensor objects
+
+        token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
+        attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
+        token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
+
+    return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
 
 def load_train_val_data(df_train, df_val, df_test):
     # Creating instances of training and validation set
     print("Reading training data...")
-    train_set = CustomDataset(df_train, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
+    train_set = CustomDataset(df_train)
 
     print("Reading validation data...")
-    val_set = CustomDataset(df_val, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
+    val_set = CustomDataset(df_val)
 
     print("Reading test data...")
-    test_set = CustomDataset(df_test, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
+    test_set = CustomDataset(df_test)
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), num_workers=5)
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), num_workers=5)
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), num_workers=5)
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
 
     return train_loader, val_loader, test_loader
 
@@ -133,7 +181,7 @@ def evaluate(path_to_output_file, df_test):
 
 def main():
     set_seed(1)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = "cpu"
     net = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
     if torch.cuda.device_count() > 1:  # if multiple GPUs
