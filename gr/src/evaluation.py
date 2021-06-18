@@ -19,19 +19,30 @@ from utils.parameters import get_yaml_parameter
 from datasets import load_dataset
 from transformers import AutoTokenizer
 
+import xml.etree.ElementTree as ET
+
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
     documents = []
-    for filename in os.listdir('gr/data'):
-        if filename.endswith('.txt'):
-            print(filename)
-            with open(os.path.join('gr/data', filename)) as f:
-                content = f.read()
-                content = content.replace("\n", "")
-                sections = re.split(r'Diagnosenschlüssel:', content)
-                documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
+    for filename in os.listdir('gr/data/ecgen-radiology'):
+        if filename.endswith('.xml'):
+            root_node = ET.parse('gr/data/ecgen-radiology/' + filename).getroot()
+            findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
+            impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
+            if findings != "" and impression != "":
+                documents.append([findings, impression, '1'])
+
+    # for filename in os.listdir('gr/data'):
+    #     if filename.endswith('.txt'):
+    #         print(filename)
+    #         with open(os.path.join('gr/data', filename)) as f:
+    #             content = f.read()
+    #             content = content.replace("\n", "")
+    #             sections = re.split(r'Diagnosenschlüssel:', content)
+    #             documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
 
     with open('gr/data/data.csv', 'w+') as output:
         writer = csv.writer(output)
