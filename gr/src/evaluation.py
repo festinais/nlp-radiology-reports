@@ -241,6 +241,7 @@ def evaluate_main():
     model.to(device)
 
     print("Predicting on test data...")
+    print("test loader length: {}".format(test_loader.shape))
     test_prediction(net=model, device=device, dataloader=test_loader, with_labels=True,
                     # set the with_labels parameter to False if your want to get predictions on a dataset without labels
                     result_file=path_to_output_file)
