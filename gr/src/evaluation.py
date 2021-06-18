@@ -217,7 +217,14 @@ def main():
                device,
                get_yaml_parameter("bert_model"))
 
+
+def evaluate():
     # test the model
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    df_train, df_val, df_test = get_data()
+
+    train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)
+
     path_to_model = glob.glob("models/*.pt")[0]
     if not os.path.exists('results'):
         os.makedirs('result')
@@ -246,4 +253,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    evaluate()
