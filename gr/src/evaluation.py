@@ -25,13 +25,13 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def get_data():
     documents = []
-    for filename in os.listdir('gr/data'):
-        if filename.endswith('.txt'):
-            with open(os.path.join('gr/data', filename)) as f:
-                content = f.read()
-                content = content.replace("\n", "")
-                sections = re.split(r'Diagnosenschlüssel:', content)
-                documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
+    for filename in os.listdir('gr/data/ecgen-radiology'):
+        if filename.endswith('.xml'):
+            root_node = ET.parse('gr/data/ecgen-radiology/' + filename).getroot()
+            findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
+            impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
+            if findings != "" and impression != "":
+                documents.append([findings, impression, '1'])
 
     with open('gr/data/data.csv', 'w+') as output:
         writer = csv.writer(output)
@@ -54,48 +54,6 @@ def get_data():
     print('{0} {1} length'.format(df_val.shape, 'validation'))
     print('{0} {1} length'.format(df_test.shape, 'test'))
     return df_train, df_val, df_test
-
-
-# def get_data():
-#     documents = []
-#     for filename in os.listdir('gr/data/ecgen-radiology'):
-#         if filename.endswith('.xml'):
-#             root_node = ET.parse('gr/data/ecgen-radiology/' + filename).getroot()
-#             findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
-#             impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
-#             if findings != "" and impression != "":
-#                 documents.append([findings, impression, '1'])
-#
-#     # for filename in os.listdir('gr/data'):
-#     #     if filename.endswith('.txt'):
-#     #         print(filename)
-#     #         with open(os.path.join('gr/data', filename)) as f:
-#     #             content = f.read()
-#     #             content = content.replace("\n", "")
-#     #             sections = re.split(r'Diagnosenschlüssel:', content)
-#     #             documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
-#
-#     with open('gr/data/data.csv', 'w+') as output:
-#         writer = csv.writer(output)
-#         writer.writerow(['section_one', 'section_two', 'label'])
-#         writer.writerows(documents)
-#
-#     dataset = load_dataset('csv', data_files='gr/data/data.csv')
-#     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-#     train = split['train']
-#     test = split['test']
-#
-#     split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-#     val = split_val['train']
-#
-#     df_train = pd.DataFrame(train)
-#     df_val = pd.DataFrame(val)
-#     df_test = pd.DataFrame(test)
-#
-#     print('{0} {1} length'.format(df_train.shape, 'train'))
-#     print('{0} {1} length'.format(df_val.shape, 'validation'))
-#     print('{0} {1} length'.format(df_test.shape, 'test'))
-#     return df_train, df_val, df_test
 
 
 def collate_fn(batch):
@@ -121,23 +79,23 @@ def collate_fn(batch):
         token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
 
         #negative sampling
-        # if index == len(batch) - 1:
-        #     index = -1
-        #     sent3 = batch[index+1][1]
-        # else:
-        #     sent3 = batch[index + 1][1]
-        # label = torch.tensor(0)
-        #
-        # labels.append(label)
-        # encoded_pair = tokenizer(sent1, sent3,
-        #                          padding='max_length',  # Pad to max_length
-        #                          truncation=True,  # Truncate to max_length
-        #                          max_length=maxlen,
-        #                          return_tensors='pt')  # Return torch.Tensor objects
-        #
-        # token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
-        # attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
-        # token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
+        if index == len(batch) - 1:
+            index = -1
+            sent3 = batch[index+1][1]
+        else:
+            sent3 = batch[index + 1][1]
+        label = torch.tensor(0)
+
+        labels.append(label)
+        encoded_pair = tokenizer(sent1, sent3,
+                                 padding='max_length',  # Pad to max_length
+                                 truncation=True,  # Truncate to max_length
+                                 max_length=maxlen,
+                                 return_tensors='pt')  # Return torch.Tensor objects
+
+        token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
+        attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
+        token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
 
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
@@ -145,18 +103,18 @@ def collate_fn(batch):
 def load_train_val_data(df_train, df_val, df_test):
     # Creating instances of training and validation set
     print("Reading training data...")
-    train_set = CustomDataset(df_train, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
+    train_set = CustomDataset(df_train)
 
     print("Reading validation data...")
-    val_set = CustomDataset(df_val, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
+    val_set = CustomDataset(df_val)
 
     print("Reading test data...")
-    test_set = CustomDataset(df_test, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
+    test_set = CustomDataset(df_test)
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"))
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"))
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"))
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
 
     return train_loader, val_loader, test_loader
 
