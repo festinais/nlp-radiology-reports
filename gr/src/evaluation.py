@@ -145,18 +145,18 @@ def collate_fn(batch):
 def load_train_val_data(df_train, df_val, df_test):
     # Creating instances of training and validation set
     print("Reading training data...")
-    train_set = CustomDataset(df_train)
+    train_set = CustomDataset(df_train, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
 
     print("Reading validation data...")
-    val_set = CustomDataset(df_val)
+    val_set = CustomDataset(df_val, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
 
     print("Reading test data...")
-    test_set = CustomDataset(df_test)
+    test_set = CustomDataset(df_test, get_yaml_parameter("maxlen"), get_yaml_parameter("bert_model"))
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"))
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"))
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"))
 
     return train_loader, val_loader, test_loader
 
