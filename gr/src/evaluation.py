@@ -20,29 +20,19 @@ from datasets import load_dataset
 from transformers import AutoTokenizer
 
 import xml.etree.ElementTree as ET
-
-
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
     documents = []
-    for filename in os.listdir('gr/data/ecgen-radiology'):
-        if filename.endswith('.xml'):
-            root_node = ET.parse('gr/data/ecgen-radiology/' + filename).getroot()
-            findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
-            impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
-            if findings != "" and impression != "":
-                documents.append([findings, impression, '1'])
-
-    # for filename in os.listdir('gr/data'):
-    #     if filename.endswith('.txt'):
-    #         print(filename)
-    #         with open(os.path.join('gr/data', filename)) as f:
-    #             content = f.read()
-    #             content = content.replace("\n", "")
-    #             sections = re.split(r'Diagnosenschlüssel:', content)
-    #             documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
+    for filename in os.listdir('gr/data'):
+        if filename.endswith('.txt'):
+            print(filename)
+            with open(os.path.join('gr/data', filename)) as f:
+                content = f.read()
+                content = content.replace("\n", "")
+                sections = re.split(r'Diagnosenschlüssel:', content)
+                documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
 
     with open('gr/data/data.csv', 'w+') as output:
         writer = csv.writer(output)
@@ -65,6 +55,48 @@ def get_data():
     print('{0} {1} length'.format(df_val.shape, 'validation'))
     print('{0} {1} length'.format(df_test.shape, 'test'))
     return df_train, df_val, df_test
+
+
+# def get_data():
+#     documents = []
+#     for filename in os.listdir('gr/data/ecgen-radiology'):
+#         if filename.endswith('.xml'):
+#             root_node = ET.parse('gr/data/ecgen-radiology/' + filename).getroot()
+#             findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
+#             impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
+#             if findings != "" and impression != "":
+#                 documents.append([findings, impression, '1'])
+#
+#     # for filename in os.listdir('gr/data'):
+#     #     if filename.endswith('.txt'):
+#     #         print(filename)
+#     #         with open(os.path.join('gr/data', filename)) as f:
+#     #             content = f.read()
+#     #             content = content.replace("\n", "")
+#     #             sections = re.split(r'Diagnosenschlüssel:', content)
+#     #             documents.append([sections[0], "Diagnosenschlüssel:" + sections[1], '1'])
+#
+#     with open('gr/data/data.csv', 'w+') as output:
+#         writer = csv.writer(output)
+#         writer.writerow(['section_one', 'section_two', 'label'])
+#         writer.writerows(documents)
+#
+#     dataset = load_dataset('csv', data_files='gr/data/data.csv')
+#     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+#     train = split['train']
+#     test = split['test']
+#
+#     split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+#     val = split_val['train']
+#
+#     df_train = pd.DataFrame(train)
+#     df_val = pd.DataFrame(val)
+#     df_test = pd.DataFrame(test)
+#
+#     print('{0} {1} length'.format(df_train.shape, 'train'))
+#     print('{0} {1} length'.format(df_val.shape, 'validation'))
+#     print('{0} {1} length'.format(df_test.shape, 'test'))
+#     return df_train, df_val, df_test
 
 
 def collate_fn(batch):
