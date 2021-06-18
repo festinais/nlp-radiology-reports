@@ -223,7 +223,7 @@ def evaluate(path_to_output_file, df_test):
 
 def main():
     set_seed(1)
-    device = "cpu"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
     if torch.cuda.device_count() > 1:  # if multiple GPUs
