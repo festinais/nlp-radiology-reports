@@ -27,7 +27,6 @@ def get_data():
     documents = []
     for filename in os.listdir('gr/data'):
         if filename.endswith('.txt'):
-            print(filename)
             with open(os.path.join('gr/data', filename)) as f:
                 content = f.read()
                 content = content.replace("\n", "")
