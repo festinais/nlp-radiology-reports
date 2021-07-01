@@ -148,6 +148,7 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
     net.eval()
     w = open(result_file, 'w')
     probs_all = []
+    metric = load_metric("glue", "mrpc")
 
     with torch.no_grad():
         if with_labels:
@@ -158,10 +159,8 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
                 probs_all += probs.tolist()
 
                 #add batches to metric
-                metric = load_metric("glue", "mrpc")
-
                 threshold = 0.5  # you can adjust this threshold for your own dataset
-                preds_test = (probs_all >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
+                preds_test = (pd.Series(probs_all) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
                 metric.add_batch(predictions=preds_test, references=labels)
 
         else:
