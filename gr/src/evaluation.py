@@ -79,23 +79,23 @@ def collate_fn(batch):
         token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
 
         #negative sampling
-        # if index == len(batch) - 1:
-        #     index = -1
-        #     sent3 = batch[index+1][1]
-        # else:
-        #     sent3 = batch[index + 1][1]
-        # label = torch.tensor(0)
-        #
-        # labels.append(label)
-        # encoded_pair = tokenizer(sent1, sent3,
-        #                          padding='max_length',  # Pad to max_length
-        #                          truncation=True,  # Truncate to max_length
-        #                          max_length=maxlen,
-        #                          return_tensors='pt')  # Return torch.Tensor objects
-        #
-        # token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
-        # attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
-        # token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
+        if index == len(batch) - 1:
+            index = -1
+            sent3 = batch[index+1][1]
+        else:
+            sent3 = batch[index + 1][1]
+        label = torch.tensor(0)
+
+        labels.append(label)
+        encoded_pair = tokenizer(sent1, sent3,
+                                 padding='max_length',  # Pad to max_length
+                                 truncation=True,  # Truncate to max_length
+                                 max_length=maxlen,
+                                 return_tensors='pt')  # Return torch.Tensor objects
+
+        token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
+        attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
+        token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
 
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
@@ -266,5 +266,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     evaluate_main()
