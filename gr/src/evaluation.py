@@ -161,7 +161,7 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
                 #add batches to metric
                 threshold = 0.5  # you can adjust this threshold for your own dataset
                 preds_test = (pd.Series(probs_all) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
-                metric.add_batch(predictions=preds_test, references=labels)
+                metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
 
         else:
             for seq, attn_masks, token_type_ids in tqdm(dataloader):
