@@ -151,11 +151,19 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
 
     with torch.no_grad():
         if with_labels:
-            for seq, attn_masks, token_type_ids, _ in tqdm(dataloader):
+            for seq, attn_masks, token_type_ids, labels in tqdm(dataloader):
                 seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
                 logits = net(seq, attn_masks, token_type_ids)
                 probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
                 probs_all += probs.tolist()
+
+                #add batches to metric
+                metric = load_metric("glue", "mrpc")
+
+                threshold = 0.5  # you can adjust this threshold for your own dataset
+                preds_test = (probs_all >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
+                metric.add_batch(predictions=preds_test, references=labels)
+
         else:
             for seq, attn_masks, token_type_ids in tqdm(dataloader):
                 seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
@@ -165,6 +173,12 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
 
     w.writelines(str(prob) + '\n' for prob in probs_all)
     w.close()
+
+    print()
+    print("Predictions are available in : {}".format(result_file))
+
+    final_score = metric.compute()
+    return final_score
 
 
 def evaluate(path_to_output_file, df_test):
@@ -241,17 +255,14 @@ def evaluate_main():
     model.to(device)
 
     print("Predicting on test data...")
-    test_prediction(net=model, device=device, dataloader=test_loader, with_labels=True,
+    score = test_prediction(net=model, device=device, dataloader=test_loader, with_labels=True,
                     # set the with_labels parameter to False if your want to get predictions on a dataset without labels
                     result_file=path_to_output_file)
-    print()
-    print("Predictions are available in : {}".format(path_to_output_file))
 
     # evaluate the model accuracy
-    score = evaluate(path_to_output_file, df_test)
+    # score = evaluate(path_to_output_file, df_test)
     print(score)
 
 
 if __name__ == "__main__":
-    # main()
     evaluate_main()
