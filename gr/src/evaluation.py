@@ -156,12 +156,13 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
                 seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
                 logits = net(seq, attn_masks, token_type_ids)
                 probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
-                probs_all += probs.tolist()
 
                 #add batches to metric
                 threshold = 0.5  # you can adjust this threshold for your own dataset
-                preds_test = (pd.Series(probs_all) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
+                preds_test = (pd.Series(probs) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
                 metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
+
+                probs_all += probs.tolist()
 
         else:
             for seq, attn_masks, token_type_ids in tqdm(dataloader):
@@ -251,6 +252,7 @@ def evaluate_main():
     print()
     print("Loading the weights of the model...")
     model.load_state_dict(torch.load(path_to_model))
+    # model.load_state_dict(torch.load(path_to_model, map_location=device))
     model.to(device)
 
     print("Predicting on test data...")
