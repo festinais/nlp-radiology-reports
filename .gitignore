@@ -2,7 +2,7 @@
 venv/
 gr/venv/
 # exclude everything
-gr/data/*
+#gr/data/*
 
 # exception to the rule
 !gr/data/.gitkeep
