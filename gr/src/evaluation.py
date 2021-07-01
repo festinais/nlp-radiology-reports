@@ -25,9 +25,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def get_data():
     documents = []
-    for filename in os.listdir('gr/data/ecgen-radiology'):
+    for filename in os.listdir('gr/data'):
         if filename.endswith('.xml'):
-            root_node = ET.parse('gr/data/ecgen-radiology/' + filename).getroot()
+            root_node = ET.parse('gr/data/' + filename).getroot()
             findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
             impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
             if findings != "" and impression != "":
