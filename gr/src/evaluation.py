@@ -20,6 +20,7 @@ from datasets import load_dataset
 from transformers import AutoTokenizer
 
 import xml.etree.ElementTree as ET
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
@@ -30,7 +31,7 @@ def get_data():
             root_node = ET.parse('gr/data/' + filename).getroot()
             findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
             impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
-            if findings != "" and impression != "":
+            if findings != "" and impression != "" and findings is not None and impression is not None:
                 documents.append([findings, impression, '1'])
 
     with open('gr/data/data.csv', 'w+') as output:
@@ -38,21 +39,17 @@ def get_data():
         writer.writerow(['section_one', 'section_two', 'label'])
         writer.writerows(documents)
 
-    dataset = load_dataset('csv', data_files='gr/data/data.csv')
-    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train = split['train']
-    test = split['test']
-
-    split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    val = split_val['train']
+    dataset = pd.read_csv('gr/data/data.csv')
+    train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
+                                     [int(.6 * len(dataset)), int(.8 * len(dataset))])
 
     df_train = pd.DataFrame(train)
-    df_val = pd.DataFrame(val)
+    df_val = pd.DataFrame(validate)
     df_test = pd.DataFrame(test)
 
-    print('{0} {1} length'.format(df_train.shape, 'train'))
-    print('{0} {1} length'.format(df_val.shape, 'validation'))
-    print('{0} {1} length'.format(df_test.shape, 'test'))
+    print('{0} {1} length'.format(train.shape, 'train'))
+    print('{0} {1} length'.format(validate.shape, 'validation'))
+    print('{0} {1} length'.format(test.shape, 'test'))
     return df_train, df_val, df_test
 
 
@@ -75,13 +72,15 @@ def collate_fn(batch):
                                  return_tensors='pt')  # Return torch.Tensor objects
 
         token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
-        attn_masks.append(encoded_pair['attention_mask'].squeeze(0))  # binary tensor with "0" for padded values and "1" for the other values
-        token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
+        attn_masks.append(encoded_pair['attention_mask'].squeeze(
+            0))  # binary tensor with "0" for padded values and "1" for the other values
+        token_type_ids.append(encoded_pair['token_type_ids'].squeeze(
+            0))  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
 
-        #negative sampling
+        # negative sampling
         if index == len(batch) - 1:
             index = -1
-            sent3 = batch[index+1][1]
+            sent3 = batch[index + 1][1]
         else:
             sent3 = batch[index + 1][1]
         label = torch.tensor(0)
@@ -157,9 +156,10 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
                 logits = net(seq, attn_masks, token_type_ids)
                 probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
 
-                #add batches to metric
+                # add batches to metric
                 threshold = 0.5  # you can adjust this threshold for your own dataset
-                preds_test = (pd.Series(probs) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
+                preds_test = (pd.Series(probs) >= threshold).astype(
+                    'uint8')  # predicted labels using the above fixed threshold
                 metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
 
                 probs_all += probs.tolist()
@@ -257,8 +257,8 @@ def evaluate_main():
 
     print("Predicting on test data...")
     score = test_prediction(net=model, device=device, dataloader=test_loader, with_labels=True,
-                    # set the with_labels parameter to False if your want to get predictions on a dataset without labels
-                    result_file=path_to_output_file)
+                            # set the with_labels parameter to False if your want to get predictions on a dataset without labels
+                            result_file=path_to_output_file)
 
     # evaluate the model accuracy
     # score = evaluate(path_to_output_file, df_test)
