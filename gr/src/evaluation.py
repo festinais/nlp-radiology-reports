@@ -39,26 +39,43 @@ def get_data():
         writer.writerow(['section_one', 'section_two', 'label'])
         writer.writerows(documents)
 
-    dataset = pd.read_csv('gr/data/data.csv', encoding='utf-8')
-    train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
-                                     [int(.6 * len(dataset)), int(.8 * len(dataset))])
-
-    df_train = pd.DataFrame(train)
-    df_val = pd.DataFrame(validate)
-    df_test = pd.DataFrame(test)
-
     dataset = load_dataset('csv', data_files='gr/data/data.csv')
-    split_1 = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train_1 = split_1['train']
-    test_1 = split_1['test']
+    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    train = split['train']
+    test = split['test']
 
-    split_val = train_1.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+    split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
     val = split_val['train']
 
-    print('{0} {1} length'.format(train.shape, 'train'))
-    print('{0} {1} length'.format(validate.shape, 'validation'))
-    print('{0} {1} length'.format(test.shape, 'test'))
+    df_train = pd.DataFrame(train)
+    df_val = pd.DataFrame(val)
+    df_test = pd.DataFrame(test)
+
+    print('{0} {1} length'.format(df_train.shape, 'train'))
+    print('{0} {1} length'.format(df_val.shape, 'validation'))
+    print('{0} {1} length'.format(df_test.shape, 'test'))
     return df_train, df_val, df_test
+
+    # dataset = pd.read_csv('gr/data/data.csv', encoding='utf-8')
+    # train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
+    #                                  [int(.6 * len(dataset)), int(.8 * len(dataset))])
+    #
+    # df_train = pd.DataFrame(train)
+    # df_val = pd.DataFrame(validate)
+    # df_test = pd.DataFrame(test)
+    #
+    # dataset = load_dataset('csv', data_files='gr/data/data.csv')
+    # split_1 = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    # train_1 = split_1['train']
+    # test_1 = split_1['test']
+    #
+    # split_val = train_1.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+    # val = split_val['train']
+    #
+    # print('{0} {1} length'.format(train.shape, 'train'))
+    # print('{0} {1} length'.format(validate.shape, 'validation'))
+    # print('{0} {1} length'.format(test.shape, 'test'))
+    # return df_train, df_val, df_test
 
 
 def collate_fn(batch):
