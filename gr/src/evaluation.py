@@ -25,21 +25,21 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    documents = []
-    for filename in os.listdir('gr/data'):
-        if filename.endswith('.xml'):
-            root_node = ET.parse('gr/data/' + filename).getroot()
-            findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
-            impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
-            if findings != "" and impression != "" and findings is not None and impression is not None:
-                documents.append([findings, impression, '1'])
+    # documents = []
+    # for filename in os.listdir('gr/data'):
+    #     if filename.endswith('.xml'):
+    #         root_node = ET.parse('gr/data/' + filename).getroot()
+    #         findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
+    #         impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
+    #         if findings != "" and impression != "" and findings is not None and impression is not None:
+    #             documents.append([findings, impression, '1'])
+    #
+    # with open('gr/data/data.csv', 'w+') as output:
+    #     writer = csv.writer(output)
+    #     writer.writerow(['section_one', 'section_two', 'label'])
+    #     writer.writerows(documents)
 
-    with open('gr/data/data.csv', 'w+') as output:
-        writer = csv.writer(output)
-        writer.writerow(['section_one', 'section_two', 'label'])
-        writer.writerows(documents)
-
-    dataset = pd.read_csv('gr/data/data.csv', encoding='utf-8')
+    dataset = pd.read_csv('gr/data_1/data.csv', encoding='utf-8')
     train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
                                      [int(.6 * len(dataset)), int(.8 * len(dataset))])
 
@@ -47,13 +47,13 @@ def get_data():
     df_val = pd.DataFrame(validate)
     df_test = pd.DataFrame(test)
 
-    dataset = load_dataset('csv', data_files='gr/data/data.csv')
-    split_1 = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train_1 = split_1['train']
-    test_1 = split_1['test']
-
-    split_val = train_1.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    val = split_val['train']
+    # dataset = load_dataset('csv', data_files='gr/data/data.csv')
+    # split_1 = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    # train_1 = split_1['train']
+    # test_1 = split_1['test']
+    #
+    # split_val = train_1.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+    # val = split_val['train']
 
     print('{0} {1} length'.format(train.shape, 'train'))
     print('{0} {1} length'.format(validate.shape, 'validation'))

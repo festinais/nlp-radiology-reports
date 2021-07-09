@@ -6,3 +6,6 @@ gr/venv/
 
 # exception to the rule
 !gr/data/.gitkeep
+!gr/data_1/.gitkeep
+text-classification/transformers
+text-classification/uncased_1
