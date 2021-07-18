@@ -52,9 +52,8 @@ def get_data():
     # val = split_val['train']
 
     train = pd.read_csv('gr/data_1/data_one.csv')
-    val = pd.read_csv('gr/data_1/data_one.csv')
-    test = pd.read_csv('gr/data_1/data_one.csv')
-
+    val = pd.read_csv('gr/data_1/data_two.csv')
+    test = pd.read_csv('gr/data_1/data_three.csv')
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
