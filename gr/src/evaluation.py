@@ -43,13 +43,17 @@ def get_data():
     # train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
     #                                  [int(.6 * len(dataset)), int(.8 * len(dataset))])
 
-    dataset = load_dataset('csv', data_files='gr/data_1/data.csv')
-    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train = split['train']
-    test = split['test']
+    # dataset = load_dataset('csv', data_files='gr/data_1/data.csv')
+    # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    # train = split['train']
+    # test = split['test']
+    #
+    # split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+    # val = split_val['train']
 
-    split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    val = split_val['train']
+    train = load_dataset('csv', data_files='gr/data_1/data_one.csv')
+    val = load_dataset('csv', data_files='gr/data_1/data_two.csv')
+    test = load_dataset('csv', data_files='gr/data_1/data_three.csv')
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
