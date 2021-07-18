@@ -280,8 +280,8 @@ def evaluate_main():
 
     print()
     print("Loading the weights of the model...")
-    # model.load_state_dict(torch.load(path_to_model))
-    model.load_state_dict(torch.load(path_to_model, map_location=device))
+    model.load_state_dict(torch.load(path_to_model))
+    # model.load_state_dict(torch.load(path_to_model, map_location=device))
     model.to(device)
 
     print("Predicting on test data...")
