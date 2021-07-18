@@ -51,9 +51,10 @@ def get_data():
     # split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
     # val = split_val['train']
 
-    train = load_dataset('csv', data_files='gr/data_1/data_one.csv')
-    val = load_dataset('csv', data_files='gr/data_1/data_two.csv')
-    test = load_dataset('csv', data_files='gr/data_1/data_three.csv')
+    train = pd.read_csv('gr/data_1/data_one.csv')
+    val = pd.read_csv('gr/data_1/data_one.csv')
+    test = pd.read_csv('gr/data_1/data_one.csv')
+
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)

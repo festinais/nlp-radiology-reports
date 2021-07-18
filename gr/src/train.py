@@ -84,12 +84,12 @@ def train_bert(net,
 
             running_loss += loss.item()
 
-            if (it + 1) % print_every == 0:  # Print training loss information
-                print()
-                print("Iteration {}/{} of epoch {} complete. Loss : {} "
-                      .format(it + 1, nb_iterations, ep + 1, running_loss / print_every))
-
-                running_loss = 0.0
+            # if (it + 1) % print_every == 0:  # Print training loss information
+            #     print()
+            #     print("Iteration {}/{} of epoch {} complete. Loss : {} "
+            #           .format(it + 1, nb_iterations, ep + 1, running_loss / print_every))
+            #
+            #     running_loss = 0.0
 
         val_loss = evaluate_loss(net, device, criterion, val_loader)  # Compute validation loss
         print()
