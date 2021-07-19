@@ -43,17 +43,13 @@ def get_data():
     # train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
     #                                  [int(.6 * len(dataset)), int(.8 * len(dataset))])
 
-    # dataset = load_dataset('csv', data_files='gr/data_1/data.csv')
-    # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    # train = split['train']
-    # test = split['test']
-    #
-    # split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    # val = split_val['train']
+    dataset = load_dataset('csv', data_files='gr/data_1/data.csv')
+    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    train = split['train']
+    test = split['test']
 
-    train = pd.read_csv('gr/data_1/data_one.csv')
-    val = pd.read_csv('gr/data_1/data_two.csv')
-    test = pd.read_csv('gr/data_1/data_three.csv')
+    split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
+    val = split_val['train']
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
@@ -63,23 +59,6 @@ def get_data():
     print('{0} {1} length'.format(df_val.shape, 'validation'))
     print('{0} {1} length'.format(df_test.shape, 'test'))
     return df_train, df_val, df_test
-
-    # df_train = pd.DataFrame(train)
-    # df_val = pd.DataFrame(validate)
-    # df_test = pd.DataFrame(test)
-    #
-    # # dataset = load_dataset('csv', data_files='gr/data/data.csv')
-    # # split_1 = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    # # train_1 = split_1['train']
-    # # test_1 = split_1['test']
-    # #
-    # # split_val = train_1.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    # # val = split_val['train']
-    #
-    # print('{0} {1} length'.format(train.shape, 'train'))
-    # print('{0} {1} length'.format(validate.shape, 'validation'))
-    # print('{0} {1} length'.format(test.shape, 'test'))
-    # return df_train, df_val, df_test
 
 
 def collate_fn(batch):
@@ -140,9 +119,9 @@ def load_train_val_data(df_train, df_val, df_test):
     test_set = CustomDataset(df_test)
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"))
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"))
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"))
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
 
     return train_loader, val_loader, test_loader
 
@@ -295,5 +274,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     evaluate_main()
