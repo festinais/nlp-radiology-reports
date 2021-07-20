@@ -1,0 +1,18 @@
+# local package
+-e .
+# project-specific requirements
+datasets
+transformers
+gputil
+psutil
+humanize
+torch
+numpy
+tqdm
+
+
+# accelerate
+# datasets >= 1.8.0
+# sentencepiece != 0.1.92
+# protobuf
+# torch >= 1.3
