@@ -10,8 +10,13 @@ with open('mrpc_data.csv', 'w+') as output:
     count = 0
     for x in my_iter:
         count += 1
-        print(x['label'])
-        writer.writerow([x['sentence1'], x['sentence2'], x['label']])
+        label = x['label']
+        if label == 1:
+            print(x['label'])
+            writer.writerow([x['sentence1'], x['sentence2'], x['label']])
+
+
+
 
 
 
