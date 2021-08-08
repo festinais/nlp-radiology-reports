@@ -9,11 +9,8 @@ with open('mrpc_data.csv', 'w+') as output:
     writer.writerow(['section_one', 'section_two', 'label'])
     count = 0
     for x in my_iter:
-        count += 1
-        label = x['label']
-        if label == 0:
-            print(x['label'])
-            writer.writerow([x['sentence1'], x['sentence2'], x['label']])
+        writer.writerow([x['sentence1'], x['sentence2'], x['label']])
+
 
 
 

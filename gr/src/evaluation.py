@@ -25,25 +25,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    # documents = []
-    # for filename in os.listdir('gr/data'):
-    #     if filename.endswith('.xml'):
-    #         root_node = ET.parse('gr/data/' + filename).getroot()
-    #         findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
-    #         impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
-    #         if findings != "" and impression != "" and findings is not None and impression is not None:
-    #             documents.append([findings, impression, '1'])
-    #
-    # with open('gr/data/data.csv', 'w+') as output:
-    #     writer = csv.writer(output)
-    #     writer.writerow(['section_one', 'section_two', 'label'])
-    #     writer.writerows(documents)
-
-    # dataset = pd.read_csv('gr/data_1/data.csv', encoding='utf-8')
-    # train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
-    #                                  [int(.6 * len(dataset)), int(.8 * len(dataset))])
-
-    dataset = load_dataset('csv', data_files='gr/data_1/data.csv')
+    dataset = load_dataset('csv', data_files='gr/data/data.csv')
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
     test = split['test']
@@ -274,5 +256,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    # main()
-    evaluate_main()
+    main()
+    # evaluate_main()
