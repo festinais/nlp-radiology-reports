@@ -37,6 +37,7 @@ def get_data():
     df_val = pd.DataFrame(val)
     df_test = pd.read_csv("gr/data/data_test.csv")
     df_test = df_test.tail(3)
+    print(df_test)
 
     print(df_test.head())
 
