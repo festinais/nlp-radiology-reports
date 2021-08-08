@@ -36,7 +36,7 @@ def get_data():
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.read_csv("gr/data/data_test.csv")
-    df_test = df_test.head(5)
+    df_test = df_test.tail(3)
 
     print(df_test.head())
 
