@@ -25,10 +25,11 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('csv', data_files='gr/data/data.csv')
+    dataset = load_dataset('csv', data_files='gr/data/data_test.csv')
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
-    test = split['test']
+    # test = split['test']
+    test = dataset
 
     split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
     val = split_val['train']
@@ -256,5 +257,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    main()
-    # evaluate_main()
+    # main()
+    evaluate_main()
