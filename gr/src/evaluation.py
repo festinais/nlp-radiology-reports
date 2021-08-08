@@ -38,6 +38,8 @@ def get_data():
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
 
+    print(df_test.head())
+
     print('{0} {1} length'.format(df_train.shape, 'train'))
     print('{0} {1} length'.format(df_val.shape, 'validation'))
     print('{0} {1} length'.format(df_test.shape, 'test'))
