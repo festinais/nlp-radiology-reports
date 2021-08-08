@@ -25,7 +25,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('csv', data_files='gr/data/data_test.csv')
+    dataset = load_dataset('csv', data_files='gr/data/data.csv')
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
     test = split['test']
@@ -103,9 +103,9 @@ def load_train_val_data(df_train, df_val, df_test):
     test_set = CustomDataset(df_test)
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"))
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"))
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"))
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
 
     return train_loader, val_loader, test_loader
 
