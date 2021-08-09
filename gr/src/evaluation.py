@@ -36,7 +36,7 @@ def get_data():
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
-    df_test = pd.read_csv("gr/data/data_no_dup.csv")
+    df_test = pd.read_csv("gr/data/data_no_dup_test.csv")
     print(df_test)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
