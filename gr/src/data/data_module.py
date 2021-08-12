@@ -48,6 +48,7 @@ class CustomDataset(Dataset):
         # sent2 = clean_text(str(self.data[['section_two']].iloc[[index]]))
 
         sent1 = str(self.data[['section_one']].iloc[[index]]).replace("Der vorbeschriebene Befund ist", "")
+        sent1 = sent1.replace("Der vorbeschriebene Befund", "")
         sent1 = sent1.replace("Kein Malignomanhalt", "")
         sent2 = str(self.data[['section_two']].iloc[[index]]).replace("Inspektorisch und palpatorisch beidseits unauffällig", "")
 
