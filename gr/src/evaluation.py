@@ -37,7 +37,7 @@ def get_data():
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
     df_test = pd.read_csv("gr/data/data_no_dup_test.csv")
-    df_test = df_test.head(3)
+    df_test = df_test.tail(3)
     print(df_test)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
@@ -259,5 +259,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     evaluate_main()
