@@ -140,6 +140,8 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
     net.eval()
     w = open(result_file, 'w')
     probs_all = []
+    labels_all = []
+    probs_threshold = []
     metric = load_metric("glue", "mrpc")
 
     with torch.no_grad():
@@ -151,11 +153,13 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
 
                 # add batches to metric
                 threshold = 0.5  # you can adjust this threshold for your own dataset
-                preds_test = (pd.Series(probs) >= threshold).astype(
-                    'uint8')  # predicted labels using the above fixed threshold
+                preds_test = (pd.Series(probs) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
+
                 metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
 
                 probs_all += probs.tolist()
+                labels_all += labels.tolist()
+                probs_threshold += preds_test.tolist()
 
         else:
             for seq, attn_masks, token_type_ids in tqdm(dataloader):
@@ -165,8 +169,13 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
                 probs_all += probs.tolist()
 
     w.writelines(str(prob) + '\n' for prob in probs_all)
-    w.close()
+    w.writelines("pred test threshold")
+    w.writelines(str(prob) + '\n' for prob in probs_threshold)
+    w.writelines("==========")
+    w.writelines("true labels")
+    w.writelines(str(prob) + '\n' for prob in labels_all)
 
+    w.close()
     print()
     print("Predictions are available in : {}".format(result_file))
 
