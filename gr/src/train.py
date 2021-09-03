@@ -4,6 +4,8 @@ import copy
 import numpy as np
 from torch.cuda.amp import autocast, GradScaler
 from tqdm import tqdm
+from transformers import AutoTokenizer
+
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -45,24 +47,50 @@ def train_bert(net,
     val_losses = []
 
     scaler = GradScaler()
+    tokenizer = AutoTokenizer.from_pretrained(bert_model)
 
     for ep in range(epochs):
-
         net.train()
         running_loss = 0.0
-        for it, (seq, attn_masks, token_type_ids, labels) in enumerate(tqdm(train_loader)):
+        for it, (section_ones, section_two, labels) in enumerate(tqdm(train_loader)):
+
+            encoded_pairs_1 = tokenizer(list(section_ones),
+                                          padding='max_length',  # Pad to max_length
+                                          truncation=True,  # Truncate to max_length
+                                          max_length=128,
+                                          return_tensors='pt')  # Return torch.Tensor objects
+
+            encoded_pairs_2 = tokenizer(list(section_two),
+                                        padding='max_length',  # Pad to max_length
+                                        truncation=True,  # Truncate to max_length
+                                        max_length=128,
+                                        return_tensors='pt')  # Return torch.Tensor objects
+
+            input_ids_1 = encoded_pairs_1['input_ids'].squeeze(0)  # tensor of token ids
+            attn_masks_1 = encoded_pairs_1['attention_mask'].squeeze(
+                0)  # binary tensor with "0" for padded values and "1" for the other values
+            token_type_ids_1 = encoded_pairs_1['token_type_ids'].squeeze(
+                0)  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
+
+            input_ids_2 = encoded_pairs_2['input_ids'].squeeze(0)  # tensor of token ids
+            attn_masks_2 = encoded_pairs_2['attention_mask'].squeeze(
+                0)  # binary tensor with "0" for padded values and "1" for the other values
+            token_type_ids_2 = encoded_pairs_2['token_type_ids'].squeeze(
+                0)  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
 
             # Converting to cuda tensors
-            seq, attn_masks, token_type_ids, labels = \
-                seq.to(device), attn_masks.to(device), token_type_ids.to(device), labels.to(device)
+            input_ids_1, attn_masks_1, token_type_ids_1, labels = input_ids_1.to(device), attn_masks_1.to(device), token_type_ids_1.to(device), labels.to(device)
+            input_ids_2, attn_masks_2, token_type_ids_2 = input_ids_2.to(device), attn_masks_2.to(device), token_type_ids_2.to(device)
 
             # Enables autocasting for the forward pass (model + loss)
             with autocast():
                 # Obtaining the logits from the model
-                logits = net(seq, attn_masks, token_type_ids)
+                h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
                 # Computing loss
-                loss = criterion(logits.squeeze(-1), labels.float())
+                loss = criterion(z_i, z_j)
+
+                # loss = criterion(logits.squeeze(-1), labels.float())
                 loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
 
             # Backpropagating the gradients

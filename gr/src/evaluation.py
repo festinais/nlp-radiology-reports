@@ -18,6 +18,13 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 from utils.parameters import get_yaml_parameter
 from datasets import load_dataset
 from transformers import AutoTokenizer
+from transformers import AutoModel
+
+# SimCLR
+from simclr.simclr import SimCLR
+from simclr.modules import NT_Xent, get_resnet
+from simclr.modules.transformations import TransformsSimCLR
+from simclr.modules.sync_batchnorm import convert_model
 
 import xml.etree.ElementTree as ET
 
@@ -25,7 +32,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
+    dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
     test = split['test']
@@ -36,8 +43,6 @@ def get_data():
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
-    df_test = pd.read_csv("gr/data/data_no_dup_test.csv")
-    df_test = df_test.tail(3)
     print(df_test)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
@@ -104,9 +109,9 @@ def load_train_val_data(df_train, df_val, df_test):
     test_set = CustomDataset(df_test)
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"))
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"))
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"))
 
     return train_loader, val_loader, test_loader
 
@@ -153,7 +158,8 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
 
                 # add batches to metric
                 threshold = 0.5  # you can adjust this threshold for your own dataset
-                preds_test = (pd.Series(probs) >= threshold).astype('uint8')  # predicted labels using the above fixed threshold
+                preds_test = (pd.Series(probs) >= threshold).astype(
+                    'uint8')  # predicted labels using the above fixed threshold
 
                 metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
 
@@ -200,6 +206,12 @@ def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
+    bert_layer = AutoModel.from_pretrained("albert-base-v2", return_dict=False)
+    configs = bert_layer.config
+
+    # initialize model
+    net = SimCLR(net, 64, configs.hidden_size)
+
     if torch.cuda.device_count() > 1:  # if multiple GPUs
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         net = nn.DataParallel(net)
@@ -210,7 +222,9 @@ def main():
     df_train, df_val, df_test = get_data()
     train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)
 
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
+    # criterion = nn.BCEWithLogitsLoss()
+
     opti = AdamW(net.parameters(), lr=float(get_yaml_parameter("lr")), weight_decay=1e-2)
     num_warmup_steps = 0  # The number of steps for the warmup phase.
 
@@ -269,4 +283,4 @@ def evaluate_main():
 
 if __name__ == "__main__":
     main()
-    evaluate_main()
+    # evaluate_main()
