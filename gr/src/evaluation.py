@@ -22,9 +22,7 @@ from transformers import AutoModel
 
 # SimCLR
 from simclr.simclr import SimCLR
-from simclr.modules import NT_Xent, get_resnet
-from simclr.modules.transformations import TransformsSimCLR
-from simclr.modules.sync_batchnorm import convert_model
+from simclr.modules import NT_Xent
 
 import xml.etree.ElementTree as ET
 
