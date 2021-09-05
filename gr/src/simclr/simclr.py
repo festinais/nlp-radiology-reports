@@ -27,6 +27,7 @@ class SimCLR(nn.Module):
     def forward(self, input_ids_i, attn_masks_i, token_type_ids_i, input_ids_j, attn_masks_j, token_type_ids_j):
         h_i = self.encoder(input_ids_i, attn_masks_i, token_type_ids_i)
         h_j = self.encoder(input_ids_j, attn_masks_j, token_type_ids_j)
+
         z_i = self.mean_pooling(self.encoder, attn_masks_i)
         z_j = self.mean_pooling(self.encoder, attn_masks_j)
         return h_i, h_j, z_i, z_j
