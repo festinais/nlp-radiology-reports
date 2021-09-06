@@ -107,9 +107,9 @@ def load_train_val_data(df_train, df_val, df_test):
     test_set = CustomDataset(df_test)
 
     # Creating instances of training and validation dataloaders
-    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"))
-    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"))
-    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"))
+    train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), drop_last=True)
+    val_loader = DataLoader(val_set, batch_size=get_yaml_parameter("bs"), drop_last=True)
+    test_loader = DataLoader(test_set, batch_size=get_yaml_parameter("bs"), drop_last=True)
 
     return train_loader, val_loader, test_loader
 
