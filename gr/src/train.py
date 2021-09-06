@@ -10,18 +10,56 @@ from transformers import AutoTokenizer
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-def evaluate_loss(net, device, criterion, dataloader):
+def evaluate_loss(net, device, criterion, dataloader, tokenizer):
     net.eval()
 
     mean_loss = 0
     count = 0
 
     with torch.no_grad():
-        for it, (seq, attn_masks, token_type_ids, labels) in enumerate(tqdm(dataloader)):
-            seq, attn_masks, token_type_ids, labels = \
-                seq.to(device), attn_masks.to(device), token_type_ids.to(device), labels.to(device)
-            logits = net(seq, attn_masks, token_type_ids)
-            mean_loss += criterion(logits.squeeze(-1), labels.float()).item()
+        for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
+            encoded_pairs_1 = tokenizer(list(section_ones),
+                                        padding='max_length',  # Pad to max_length
+                                        truncation=True,  # Truncate to max_length
+                                        max_length=128,
+                                        return_tensors='pt')  # Return torch.Tensor objects
+
+            encoded_pairs_2 = tokenizer(list(section_two),
+                                        padding='max_length',  # Pad to max_length
+                                        truncation=True,  # Truncate to max_length
+                                        max_length=128,
+                                        return_tensors='pt')  # Return torch.Tensor objects
+
+            input_ids_1 = encoded_pairs_1['input_ids'].squeeze(0)  # tensor of token ids
+            attn_masks_1 = encoded_pairs_1['attention_mask'].squeeze(
+                0)  # binary tensor with "0" for padded values and "1" for the other values
+            token_type_ids_1 = encoded_pairs_1['token_type_ids'].squeeze(
+                0)  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
+
+            input_ids_2 = encoded_pairs_2['input_ids'].squeeze(0)  # tensor of token ids
+            attn_masks_2 = encoded_pairs_2['attention_mask'].squeeze(
+                0)  # binary tensor with "0" for padded values and "1" for the other values
+            token_type_ids_2 = encoded_pairs_2['token_type_ids'].squeeze(
+                0)  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
+
+            # Converting to cuda tensors
+            input_ids_1, attn_masks_1, token_type_ids_1, labels = input_ids_1.to(device), attn_masks_1.to(
+                device), token_type_ids_1.to(device), labels.to(device)
+            input_ids_2, attn_masks_2, token_type_ids_2 = input_ids_2.to(device), attn_masks_2.to(
+                device), token_type_ids_2.to(device)
+
+            # Enables autocasting for the forward pass (model + loss)
+
+            # Obtaining the logits from the model
+            h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
+                                     token_type_ids_2)
+
+            # Computing loss
+            mean_loss += criterion(z_i, z_j)
+            # seq, attn_masks, token_type_ids, labels = \
+            #     seq.to(device), attn_masks.to(device), token_type_ids.to(device), labels.to(device)
+            # logits = net(seq, attn_masks, token_type_ids)
+            # mean_loss += criterion(logits.squeeze(-1), labels.float()).item()
             count += 1
 
     return mean_loss / count
@@ -91,7 +129,7 @@ def train_bert(net,
                 loss = criterion(z_i, z_j)
 
                 # loss = criterion(logits.squeeze(-1), labels.float())
-                loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
+                # loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
 
             # Backpropagating the gradients
             # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
@@ -119,7 +157,7 @@ def train_bert(net,
 
                 running_loss = 0.0
 
-        val_loss = evaluate_loss(net, device, criterion, val_loader)  # Compute validation loss
+        val_loss = evaluate_loss(net, device, criterion, val_loader, tokenizer)  # Compute validation loss
         print()
         print("Epoch {} complete! Validation Loss : {}".format(ep + 1, val_loss))
 
