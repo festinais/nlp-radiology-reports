@@ -31,6 +31,7 @@ class SentencePairClassifier(nn.Module):
 
         # Feeding the inputs to the BERT-based model to obtain contextualized representations
         model = self.bert_layer(input_ids, attn_masks, token_type_ids)
+        print("bllaaa", model.keys())
         last_hidden_state, pooler_output = model.last_hidden_state, model.pooler_output
 
         # Feeding to the classifier layer the last layer hidden-state of the [CLS] token further processed by a
