@@ -25,11 +25,18 @@ class SimCLR(nn.Module):
         )
 
     def forward(self, input_ids_i, attn_masks_i, token_type_ids_i, input_ids_j, attn_masks_j, token_type_ids_j):
-        h_i, z_i = self.encoder(input_ids_i, attn_masks_i, token_type_ids_i)
-        h_j, z_j = self.encoder(input_ids_j, attn_masks_j, token_type_ids_j)
+        h_i, h_i_p = self.encoder(input_ids_i, attn_masks_i, token_type_ids_i)
+        h_j, h_j_p = self.encoder(input_ids_j, attn_masks_j, token_type_ids_j)
 
+        z_i = self.mean_pooling(h_i_p, attn_masks_i)
+        z_j = self.mean_pooling(h_j_p, attn_masks_j)
         return h_i, h_j, z_i, z_j
 
-    def mean_pooling(self, model_output):
-        embedded = model_output.mean(1)  # 1 is the dimension you want to average ovber
-        return embedded
+    def mean_pooling(self, emb, att_mask):
+        mask = att_mask.unsqueeze(-1).expand(emb.size()).float()
+        mask_embeddings = emb * mask
+        summed = torch.sum(mask_embeddings, 1)
+        summed_mask = torch.clamp(mask.sum(1), min=1e-9)
+        mean_pooled = summed / summed_mask
+
+        return mean_pooled

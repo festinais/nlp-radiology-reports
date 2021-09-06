@@ -30,12 +30,13 @@ class SentencePairClassifier(nn.Module):
         '''
 
         # Feeding the inputs to the BERT-based model to obtain contextualized representations
-        cont_reps, pooler_output = self.bert_layer(input_ids, attn_masks, token_type_ids)
+        model = self.bert_layer(input_ids, attn_masks, token_type_ids)
+        last_hidden_state, pooler_output = model.last_hidden_state, model.pooler_output
 
         # Feeding to the classifier layer the last layer hidden-state of the [CLS] token further processed by a
         # Linear Layer and a Tanh activation. The Linear layer weights were trained from the sentence order
         # prediction (ALBERT) or next sentence prediction (BERT) objective during pre-training.
         logits = self.cls_layer(self.dropout(pooler_output))
 
-        return logits, cont_reps
+        return logits, last_hidden_state
 
