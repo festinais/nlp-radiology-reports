@@ -261,7 +261,10 @@ def evaluate_main():
 
     path_to_output_file = get_yaml_parameter('path_to_output_file')
     model = SentencePairClassifier(get_yaml_parameter("bert_model"))
-    model = SimCLR(model, 64, 64)
+
+    bert_layer = AutoModel.from_pretrained("albert-base-v2", return_dict=False)
+    configs = bert_layer.config
+    model = SimCLR(model, 64, configs.hidden_size)
 
     # if torch.cuda.device_count() > 1:  # if multiple GPUs
     #     print("Let's use", torch.cuda.device_count(), "GPUs!")
