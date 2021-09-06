@@ -40,6 +40,7 @@ class NT_Xent(nn.Module):
         sim_j_i = torch.diag(sim, -self.batch_size * self.world_size)
 
         # We have 2N samples, but with Distributed training every GPU gets N examples too, resulting in: 2xNxN
+        print("N value", N)
         positive_samples = torch.cat((sim_i_j, sim_j_i), dim=0).reshape(N, 1)
         negative_samples = sim[self.mask].reshape(N, -1)
 

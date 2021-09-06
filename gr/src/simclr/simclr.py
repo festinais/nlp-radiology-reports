@@ -38,5 +38,4 @@ class SimCLR(nn.Module):
         summed = torch.sum(mask_embeddings, 1)
         summed_mask = torch.clamp(mask.sum(1), min=1e-9)
         mean_pooled = summed / summed_mask
-
         return mean_pooled
