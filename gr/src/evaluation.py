@@ -243,7 +243,7 @@ def evaluate_main():
 
     path_to_model = glob.glob("models/*.pt")[0]
     if not os.path.exists('results'):
-        os.makedirs('result')
+        os.makedirs('results')
 
     path_to_output_file = get_yaml_parameter('path_to_output_file')
     model = SentencePairClassifier(get_yaml_parameter("bert_model"))
