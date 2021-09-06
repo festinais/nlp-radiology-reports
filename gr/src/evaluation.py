@@ -153,7 +153,7 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
         if with_labels:
             for seq, attn_masks, token_type_ids, labels in tqdm(dataloader):
                 seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
-                logits = net(seq, attn_masks, token_type_ids)
+                logits, _, _, _ = net(seq, attn_masks, token_type_ids)
                 probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
 
                 # add batches to metric
@@ -261,6 +261,8 @@ def evaluate_main():
 
     path_to_output_file = get_yaml_parameter('path_to_output_file')
     model = SentencePairClassifier(get_yaml_parameter("bert_model"))
+    model = SimCLR(model, 64, 64)
+
     if torch.cuda.device_count() > 1:  # if multiple GPUs
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)
