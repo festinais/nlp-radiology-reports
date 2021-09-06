@@ -263,9 +263,9 @@ def evaluate_main():
     model = SentencePairClassifier(get_yaml_parameter("bert_model"))
     model = SimCLR(model, 64, 64)
 
-    if torch.cuda.device_count() > 1:  # if multiple GPUs
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
-        model = nn.DataParallel(model)
+    # if torch.cuda.device_count() > 1:  # if multiple GPUs
+    #     print("Let's use", torch.cuda.device_count(), "GPUs!")
+    #     model = nn.DataParallel(model)
 
     print()
     print("Loading the weights of the model...")
