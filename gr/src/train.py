@@ -165,7 +165,7 @@ def train_bert(net,
             print("Best validation loss improved from {} to {}".format(best_loss, val_loss))
             print()
             net_copy = copy.deepcopy(net)  # save a copy of the model
-            best_loss = val_loss
+            best_loss = round(val_loss.eval(), 5)
             best_ep = ep + 1
 
     # Saving the model
