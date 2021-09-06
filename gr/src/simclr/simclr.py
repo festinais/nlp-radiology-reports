@@ -25,17 +25,13 @@ class SimCLR(nn.Module):
         )
 
     def forward(self, input_ids_i, attn_masks_i, token_type_ids_i, input_ids_j, attn_masks_j, token_type_ids_j):
-        h_i = self.encoder(input_ids_i, attn_masks_i, token_type_ids_i)
-        h_j = self.encoder(input_ids_j, attn_masks_j, token_type_ids_j)
+        h_i, h_i_p = self.encoder(input_ids_i, attn_masks_i, token_type_ids_i)
+        h_j, h_j_p = self.encoder(input_ids_j, attn_masks_j, token_type_ids_j)
 
-        z_i = self.mean_pooling(self.encoder, attn_masks_i)
-        z_j = self.mean_pooling(self.encoder, attn_masks_j)
+        z_i = self.mean_pooling(h_i_p)
+        z_j = self.mean_pooling(h_j_p)
         return h_i, h_j, z_i, z_j
 
-    # Mean Pooling - Take attention mask into account for correct averaging
-    def mean_pooling(self, model_output, attention_mask):
-        token_embeddings = model_output  # First element of model_output contains all token embeddings
-        input_mask_expanded = attention_mask.unsqueeze(-1).expand(model_output.bert_layer.config.embedding_size).float()
-        sum_embeddings = torch.sum(token_embeddings * input_mask_expanded, 1)
-        sum_mask = torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-        return sum_embeddings / sum_mask
+    def mean_pooling(self, model_output):
+        embedded = model_output.mean(1)  # 1 is the dimension you want to average ovber
+        return embedded

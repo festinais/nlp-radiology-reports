@@ -10,18 +10,6 @@ class SentencePairClassifier(nn.Module):
         #  Instantiating BERT-based model object
         self.bert_layer = AutoModel.from_pretrained(bert_model, return_dict=False)
         self.bert_model = bert_model
-        # Fix the hidden-state size of the encoder outputs
-        # (If you want to add other pre-trained models here, search for the encoder output size)
-        if bert_model == "albert-base-v2":  # 12M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "albert-large-v2":  # 18M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "albert-xlarge-v2":  # 60M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "albert-xxlarge-v2":  # 235M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "bert-base-uncased": # 110M parameters
-            hidden_size = self.bert_layer.config.hidden_size
 
         # Freeze bert layers and only train the classification layer weights
         if freeze_bert:
@@ -29,7 +17,7 @@ class SentencePairClassifier(nn.Module):
                 p.requires_grad = False
 
         # Classification layer
-        self.cls_layer = nn.Linear(hidden_size, 1)
+        self.cls_layer = nn.Linear(self.bert_layer.config.hidden_size, 1)
         self.dropout = nn.Dropout(p=0.1)
 
     @autocast()  # run in mixed precision
@@ -45,9 +33,9 @@ class SentencePairClassifier(nn.Module):
         cont_reps, pooler_output = self.bert_layer(input_ids, attn_masks, token_type_ids)
 
         # Feeding to the classifier layer the last layer hidden-state of the [CLS] token further processed by a
-        # Linear Layer and a Tanh activation. The Linear layer weights were trained from the sentence order prediction (ALBERT) or next sentence prediction (BERT)
-        # objective during pre-training.
+        # Linear Layer and a Tanh activation. The Linear layer weights were trained from the sentence order
+        # prediction (ALBERT) or next sentence prediction (BERT) objective during pre-training.
         logits = self.cls_layer(self.dropout(pooler_output))
 
-        return logits
+        return logits, pooler_output
 
