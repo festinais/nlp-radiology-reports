@@ -37,5 +37,5 @@ class SentencePairClassifier(nn.Module):
         # prediction (ALBERT) or next sentence prediction (BERT) objective during pre-training.
         logits = self.cls_layer(self.dropout(pooler_output))
 
-        return logits, pooler_output
+        return logits, cont_reps
 
