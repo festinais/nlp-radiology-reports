@@ -129,7 +129,7 @@ def train_bert(net,
                 loss = criterion(z_i, z_j)
 
                 # loss = criterion(logits.squeeze(-1), labels.float())
-                # loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
+                loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
 
             # Backpropagating the gradients
             # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
