@@ -133,7 +133,8 @@ def train_bert(net,
 
             # Backpropagating the gradients
             # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
-            scaler.scale(loss).backward()
+            # scaler.scale(loss).backward()
+            loss.backward()
 
             if (it + 1) % iters_to_accumulate == 0:
                 # Optimization step
