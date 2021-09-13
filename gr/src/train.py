@@ -126,7 +126,7 @@ def train_bert(net,
                 h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
                 # Computing loss
-                loss = criterion(z_i, z_j)
+                loss, acc = criterion(z_i, z_j)
 
                 # loss = criterion(logits.squeeze(-1), labels.float())
                 loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
@@ -152,8 +152,8 @@ def train_bert(net,
 
             if (it + 1) % print_every == 0:  # Print training loss information
                 print()
-                print("Iteration {}/{} of epoch {} complete. Loss : {} "
-                      .format(it + 1, nb_iterations, ep + 1, running_loss / print_every))
+                print("Iteration {}/{} of epoch {} complete. Loss : {}. Accuracy: {}"
+                      .format(it + 1, nb_iterations, ep + 1, running_loss / print_every, acc))
 
                 running_loss = 0.0
 
