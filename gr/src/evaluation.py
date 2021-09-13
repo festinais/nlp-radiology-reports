@@ -212,11 +212,9 @@ def main():
     # initialize model
     net = SimCLR(net, 64, configs.hidden_size)
 
-    if torch.cuda.device_count() > 1:  # if multiple GPUs
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
-        net = nn.DataParallel(net)
-
-    device = torch.device("cpu")
+    # if torch.cuda.device_count() > 1:  # if multiple GPUs
+    #     print("Let's use", torch.cuda.device_count(), "GPUs!")
+    #     net = nn.DataParallel(net)
 
     net.to(device)
 
