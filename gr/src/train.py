@@ -175,6 +175,7 @@ def train_bert(net,
     # Saving the model
     if not os.path.exists('models'):
         os.makedirs('models')
-    path_to_model = 'models/{}_lr_{}_val_loss_{}_ep_{}.pt'.format(bert_model, lr, round(best_loss.item(), 5), best_ep)
+    path_to_model = 'models/{}_lr_{}_val_loss_{}_ep_{}.pt'.format(bert_model, lr, round(best_loss, 5), best_ep)
+    # path_to_model = 'models/{}_lr_{}_val_loss_{}_ep_{}.pt'.format(bert_model, lr, round(best_loss.item(), 5), best_ep)
     torch.save(net_copy.state_dict(), path_to_model)
     print("The model has been saved in {}".format(path_to_model))
