@@ -216,6 +216,7 @@ def main():
     #     print("Let's use", torch.cuda.device_count(), "GPUs!")
     #     net = nn.DataParallel(net)
 
+    # device = torch.device("cpu")
     net.to(device)
 
     # get the data
