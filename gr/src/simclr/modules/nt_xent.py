@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 from .gather import GatherLayer
 import torch
-# import our library
-import torchmetrics
-
-import pandas as pd
-# initialize metric
-from torchmetrics import Accuracy, F1
+# # import our library
+# import torchmetrics
+#
+# import pandas as pd
+# # initialize metric
+# from torchmetrics import Accuracy, F1
 
 
 class NT_Xent(nn.Module):
