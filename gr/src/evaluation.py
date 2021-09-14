@@ -184,9 +184,6 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
                                  token_type_ids_2)
         # Computing loss
         loss, acc, logits, labels = criterion(z_i, z_j)
-        print("adding a batch")
-        print("logits: ", logits)
-        print("labels: ", labels)
         metric.add_batch(predictions=logits, references=labels)
 
     final_score = metric.compute()
