@@ -185,7 +185,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         # Computing loss
         loss, acc, logits, labels = criterion(z_i, z_j)
         print("adding a batch")
-        metric.add_batch(predictions=logits, references=pd.Series(labels).astype('uint8'))
+        metric.add_batch(predictions=logits, references=labels)
 
     final_score = metric.compute()
     return final_score
