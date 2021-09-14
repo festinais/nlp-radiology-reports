@@ -70,7 +70,7 @@ class NT_Xent(nn.Module):
 
         loss = self.criterion(logits, labels)
         loss /= N
-        return loss, acc, logits_acc, labels_acc
+        return loss, acc, pred_acc, labels_acc
 
 
 def get_probs_from_logits(logits):
