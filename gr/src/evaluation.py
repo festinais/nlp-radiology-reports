@@ -142,9 +142,6 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
 
     net.eval()
     w = open(result_file, 'w')
-    probs_all = []
-    labels_all = []
-    probs_threshold = []
     metric = load_metric("accuracy")
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
@@ -291,5 +288,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     evaluate_main()
