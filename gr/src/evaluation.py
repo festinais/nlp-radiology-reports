@@ -135,7 +135,7 @@ def get_probs_from_logits(logits):
     return probs.detach().cpu().numpy()
 
 
-def test_prediction(net, device, dataloader, with_labels=True, result_file="results/output.txt"):
+def test_prediction(net, device, dataloader, criterion, with_labels=True, result_file="results/output.txt"):
     """
     Predict the probabilities on a dataset with or without labels and print the result in a file
     """
@@ -147,43 +147,77 @@ def test_prediction(net, device, dataloader, with_labels=True, result_file="resu
     probs_all = []
     labels_all = []
     probs_threshold = []
-    metric = load_metric("glue", "mrpc")
+    metric = load_metric("accuracy")
+    tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
     with torch.no_grad():
         if with_labels:
-            for seq, attn_masks, token_type_ids, labels in tqdm(dataloader):
-                seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
-                logits, _, _, _ = net(seq, attn_masks, token_type_ids)
-                probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
+            for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
+                encoded_pairs_1 = tokenizer(list(section_ones),
+                                            padding='max_length',  # Pad to max_length
+                                            truncation=True,  # Truncate to max_length
+                                            max_length=128,
+                                            return_tensors='pt')  # Return torch.Tensor objects
 
-                # add batches to metric
-                threshold = 0.5  # you can adjust this threshold for your own dataset
-                preds_test = (pd.Series(probs) >= threshold).astype(
-                    'uint8')  # predicted labels using the above fixed threshold
+                encoded_pairs_2 = tokenizer(list(section_two),
+                                            padding='max_length',  # Pad to max_length
+                                            truncation=True,  # Truncate to max_length
+                                            max_length=128,
+                                            return_tensors='pt')  # Return torch.Tensor objects
 
-                metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
+                input_ids_1 = encoded_pairs_1['input_ids'].squeeze(0)  # tensor of token ids
+                attn_masks_1 = encoded_pairs_1['attention_mask'].squeeze(
+                    0)  # binary tensor with "0" for padded values and "1" for the other values
+                token_type_ids_1 = encoded_pairs_1['token_type_ids'].squeeze(
+                    0)  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
 
-                probs_all += probs.tolist()
-                labels_all += labels.tolist()
-                probs_threshold += preds_test.tolist()
+                input_ids_2 = encoded_pairs_2['input_ids'].squeeze(0)  # tensor of token ids
+                attn_masks_2 = encoded_pairs_2['attention_mask'].squeeze(
+                    0)  # binary tensor with "0" for padded values and "1" for the other values
+                token_type_ids_2 = encoded_pairs_2['token_type_ids'].squeeze(
+                    0)  # binary tensor with "0" for the 1st sentence tokens & "1" for the 2nd sentence tokens
 
-        else:
-            for seq, attn_masks, token_type_ids in tqdm(dataloader):
-                seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
-                logits = net(seq, attn_masks, token_type_ids)
-                probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
-                probs_all += probs.tolist()
+                # Converting to cuda tensors
+                input_ids_1, attn_masks_1, token_type_ids_1, labels = input_ids_1.to(device), attn_masks_1.to(
+                    device), token_type_ids_1.to(device), labels.to(device)
+                input_ids_2, attn_masks_2, token_type_ids_2 = input_ids_2.to(device), attn_masks_2.to(
+                    device), token_type_ids_2.to(device)
 
-    w.writelines(str(prob) + '\n' for prob in probs_all)
-    w.writelines("pred test threshold")
-    w.writelines(str(prob) + '\n' for prob in probs_threshold)
-    w.writelines("==========")
-    w.writelines("true labels")
-    w.writelines(str(prob) + '\n' for prob in labels_all)
+                # Obtaining the logits from the model
+                h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
+                                         token_type_ids_2)
 
-    w.close()
-    print()
-    print("Predictions are available in : {}".format(result_file))
+                # Computing loss
+                loss, acc, logits, labels = criterion(z_i, z_j)
+
+                metric.add_batch(predictions=logits, references=pd.Series(labels).astype('uint8'))
+
+            # for seq, attn_masks, token_type_ids, labels in tqdm(dataloader):
+            #     seq, attn_masks, token_type_ids = seq.to(device), attn_masks.to(device), token_type_ids.to(device)
+            #     logits, _, _, _ = net(seq, attn_masks, token_type_ids)
+            #     probs = get_probs_from_logits(logits.squeeze(-1)).squeeze(-1)
+            #
+            #     # add batches to metric
+            #     threshold = 0.5  # you can adjust this threshold for your own dataset
+            #     preds_test = (pd.Series(probs) >= threshold).astype(
+            #         'uint8')  # predicted labels using the above fixed threshold
+            #
+            #     metric.add_batch(predictions=preds_test, references=pd.Series(labels).astype('uint8'))
+            #
+            #     probs_all += probs.tolist()
+            #     labels_all += labels.tolist()
+            #     probs_threshold += preds_test.tolist()
+
+
+    # w.writelines(str(prob) + '\n' for prob in probs_all)
+    # w.writelines("pred test threshold")
+    # w.writelines(str(prob) + '\n' for prob in probs_threshold)
+    # w.writelines("==========")
+    # w.writelines("true labels")
+    # w.writelines(str(prob) + '\n' for prob in labels_all)
+    # w.close()
+    # print()
+    # print("Predictions are available in : {}".format(result_file))
 
     final_score = metric.compute()
     return final_score
@@ -279,7 +313,8 @@ def evaluate_main():
     model.to(device)
 
     print("Predicting on test data...")
-    score = test_prediction(net=model, device=device, dataloader=test_loader, with_labels=True,
+    criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
+    score = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
                             # set the with_labels parameter to False if your want to get predictions on a dataset without labels
                             result_file=path_to_output_file)
 

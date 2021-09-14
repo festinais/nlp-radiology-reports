@@ -41,7 +41,7 @@ class NT_Xent(nn.Module):
         if self.world_size > 1:
             z = torch.cat(GatherLayer.apply(z), dim=0)
 
-        sim = self.similarity_f(z.unsqueeze(1), z.unsqueeze(0))
+        sim = self.similarity_f(z.unsqueeze(1), z.unsqueeze(0)) / self.temperature
 
         sim_i_j = torch.diag(sim, self.batch_size * self.world_size)
         sim_j_i = torch.diag(sim, -self.batch_size * self.world_size)
@@ -53,12 +53,24 @@ class NT_Xent(nn.Module):
         labels = torch.zeros(N).to(positive_samples.device).long()
         logits = torch.cat((positive_samples, negative_samples), dim=1)
 
-        pred = torch.argmax(logits, 1)
-        acc = (labels == pred).sum().item() / logits.size(0)
+        #without temperature
+        sim_acc = self.similarity_f(z.unsqueeze(1), z.unsqueeze(0))
+
+        sim_i_j_acc = torch.diag(sim_acc, self.batch_size * self.world_size)
+        sim_j_i_acc = torch.diag(sim_acc, -self.batch_size * self.world_size)
+
+        positive_samples_acc = torch.cat((sim_i_j_acc, sim_j_i_acc), dim=0).reshape(N, 1)
+        negative_samples_acc = sim_acc[self.mask].reshape(N, -1)
+
+        labels_acc = torch.zeros(N).to(positive_samples_acc.device).long()
+        logits_acc = torch.cat((positive_samples_acc, negative_samples_acc), dim=1)
+
+        pred_acc = torch.argmax(logits_acc, 1)
+        acc = (labels_acc == pred_acc).sum().item() / logits_acc.size(0)
 
         loss = self.criterion(logits, labels)
         loss /= N
-        return loss, acc
+        return loss, acc, logits_acc, labels_acc
 
 
 def get_probs_from_logits(logits):

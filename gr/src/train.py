@@ -15,7 +15,7 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
 
     mean_loss = 0
     count = 0
-    acc = 0
+    mean_acc = 0
     with torch.no_grad():
         for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
             encoded_pairs_1 = tokenizer(list(section_ones),
@@ -55,8 +55,9 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
                                      token_type_ids_2)
 
             # Computing loss
-            loss, acc = criterion(z_i, z_j)
+            loss, acc, _, _ = criterion(z_i, z_j)
 
+            mean_acc += acc
             mean_loss += loss.item()
             # seq, attn_masks, token_type_ids, labels = \
             #     seq.to(device), attn_masks.to(device), token_type_ids.to(device), labels.to(device)
@@ -64,7 +65,7 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
             # mean_loss += criterion(logits.squeeze(-1), labels.float()).item()
             count += 1
 
-    return mean_loss / count, acc
+    return mean_loss / count, mean_acc / count
 
 
 def train_bert(net,
@@ -128,7 +129,7 @@ def train_bert(net,
                 h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
                 # Computing loss
-                loss, acc = criterion(z_i, z_j)
+                loss, acc, _, _ = criterion(z_i, z_j)
 
                 # loss = criterion(logits.squeeze(-1), labels.float())
                 loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
