@@ -23,17 +23,15 @@ from transformers import AutoModel
 # SimCLR
 from simclr.simclr import SimCLR
 from simclr.modules import NT_Xent
-import torchmetrics
 
-metric = torchmetrics.Accuracy()
-
+import xml.etree.ElementTree as ET
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
-    # dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
+    # dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
+    dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
     test = split['test']
@@ -44,7 +42,7 @@ def get_data():
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
-    # df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
+    df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
     print('{0} {1} length'.format(df_val.shape, 'validation'))
@@ -145,9 +143,11 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
 
     net.eval()
     w = open(result_file, 'w')
+
+    #accuracies
     metric_acc = load_metric("accuracy")
     metric_f1 = load_metric("f1", average=None)
-    metric_mathew = load_metric("matthews_correlation", average=None)
+
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
     for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
@@ -188,14 +188,12 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         loss, acc, logits, labels = criterion(z_i, z_j)
         # print(logits)
         # print(labels)
+        metric_acc.add_batch(predictions=logits, references=labels)
+        metric_f1.add_batch(predictions=logits, references=labels)
 
-        acc = metric(logits, labels)
-
-    acc = metric.compute()
-    metric.reset()
-    # final_score_f1 = metric_f1.compute()
-    # metric_mathew = metric_mathew.compute()
-    return acc, acc, acc
+    final_score_acc = metric_acc.compute()
+    final_score_f1 = metric_f1.compute()
+    return final_score_acc, final_score_f1
 
 
 def evaluate(path_to_output_file, df_test):
@@ -289,7 +287,7 @@ def evaluate_main():
 
     print("Predicting on test data...")
     criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
-    score_acc, score_f1, score_mathew = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
+    score_acc, score_f1 = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
                             # set the with_labels parameter to False if your want to get predictions on a dataset without labels
                             result_file=path_to_output_file)
 
@@ -297,7 +295,6 @@ def evaluate_main():
     # score = evaluate(path_to_output_file, df_test)
     print(score_acc)
     print(score_f1)
-    print(score_mathew)
 
 
 if __name__ == "__main__":
