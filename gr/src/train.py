@@ -136,18 +136,18 @@ def train_bert(net,
 
             # Backpropagating the gradients
             # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
-            scaler.scale(loss).backward()
-            # loss.backward()
+            # scaler.scale(loss).backward()
+            loss.backward()
 
             if (it + 1) % iters_to_accumulate == 0:
                 # Optimization step
                 # scaler.step() first unscales the gradients of the optimizer's assigned params.
                 # If these gradients do not contain infs or NaNs, opti.step() is then called,
                 # otherwise, opti.step() is skipped.
-                scaler.step(opti)
-                # opti.step()
+                # scaler.step(opti)
+                opti.step()
                 # Updates the scale for next iteration.
-                scaler.update()
+                # scaler.update()
                 # Adjust the learning rate based on the number of iterations.
                 lr_scheduler.step()
                 # Clear gradients
