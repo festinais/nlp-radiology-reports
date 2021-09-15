@@ -214,7 +214,7 @@ def main():
     #     print("Let's use", torch.cuda.device_count(), "GPUs!")
     #     net = nn.DataParallel(net)
 
-    device = torch.device("cpu")
+    # device = torch.device("cpu")
     net.to(device)
 
     # get the data
@@ -249,8 +249,8 @@ def main():
 
 def evaluate_main():
     # test the model
-    device = torch.device("cpu")
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     df_train, df_val, df_test = get_data()
 
     train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)
