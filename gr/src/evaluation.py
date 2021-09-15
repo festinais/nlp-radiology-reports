@@ -146,7 +146,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
 
     #accuracies
     metric_acc = load_metric("accuracy")
-    metric_f1 = load_metric("f1", average=None)
+    metric_f1 = load_metric("f1")
 
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
