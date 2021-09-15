@@ -31,7 +31,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def get_data():
     dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
-    dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
+    # dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
     split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     train = split['train']
     test = split['test']
@@ -182,8 +182,8 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
                                  token_type_ids_2)
         # Computing loss
         loss, acc, logits, labels = criterion(z_i, z_j)
-        print(logits)
-        print(labels)
+        # print(logits)
+        # print(labels)
         metric.add_batch(predictions=logits, references=labels)
 
     final_score = metric.compute()
