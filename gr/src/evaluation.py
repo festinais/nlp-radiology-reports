@@ -189,7 +189,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         # print(logits)
         # print(labels)
         metric_acc.add_batch(predictions=logits, references=labels)
-        metric_f1.add_batch(predictions=logits, references=labels, average=None)
+        metric_f1.add_batch(predictions=logits, references=labels)
 
     final_score_acc = metric_acc.compute()
     final_score_f1 = metric_f1.compute(average=None)
