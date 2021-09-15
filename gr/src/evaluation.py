@@ -23,8 +23,10 @@ from transformers import AutoModel
 # SimCLR
 from simclr.simclr import SimCLR
 from simclr.modules import NT_Xent
+import torchmetrics
 
-import xml.etree.ElementTree as ET
+metric = torchmetrics.Accuracy()
+
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -42,7 +44,7 @@ def get_data():
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
     df_test = pd.DataFrame(test)
-    df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
+    # df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
     print('{0} {1} length'.format(df_val.shape, 'validation'))
@@ -186,14 +188,14 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         loss, acc, logits, labels = criterion(z_i, z_j)
         # print(logits)
         # print(labels)
-        metric_acc.add_batch(predictions=logits, references=labels)
-        metric_f1.add_batch(predictions=logits, references=labels)
-        metric_mathew.add_batch(predictions=logits, references=labels)
 
-    final_score_acc = metric_acc.compute()
-    final_score_f1 = metric_f1.compute()
-    metric_mathew = metric_mathew.compute()
-    return final_score_acc, final_score_f1, metric_mathew
+        acc = metric(logits, labels)
+
+    acc = metric.compute()
+    metric.reset()
+    # final_score_f1 = metric_f1.compute()
+    # metric_mathew = metric_mathew.compute()
+    return acc, acc, acc
 
 
 def evaluate(path_to_output_file, df_test):
