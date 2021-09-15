@@ -144,8 +144,8 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     net.eval()
     w = open(result_file, 'w')
     metric_acc = load_metric("accuracy")
-    metric_f1 = load_metric("f1", average='None')
-    metric_mathew = load_metric("matthews_correlation", average='None')
+    metric_f1 = load_metric("f1", average=None)
+    metric_mathew = load_metric("matthews_correlation", average=None)
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
     for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
