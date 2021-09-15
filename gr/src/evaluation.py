@@ -144,7 +144,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     net.eval()
     w = open(result_file, 'w')
     metric_acc = load_metric("accuracy")
-    metric_f1 = load_metric("f1")
+    metric_f1 = load_metric("f1", average='None')
     metric_mathew = load_metric("matthews_correlation", average='None')
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
@@ -191,7 +191,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         metric_mathew.add_batch(predictions=logits, references=labels)
 
     final_score_acc = metric_acc.compute()
-    final_score_f1 = metric_f1.compute(average='None')
+    final_score_f1 = metric_f1.compute()
     metric_mathew = metric_mathew.compute()
     return final_score_acc, final_score_f1, metric_mathew
 
