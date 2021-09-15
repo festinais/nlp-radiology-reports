@@ -143,7 +143,9 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
 
     net.eval()
     w = open(result_file, 'w')
-    metric = load_metric("accuracy")
+    metric_acc = load_metric("accuracy")
+    metric_f1 = load_metric("f1")
+    metric_mathew = load_metric("matthews_correlation")
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
     for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
@@ -184,10 +186,14 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         loss, acc, logits, labels = criterion(z_i, z_j)
         # print(logits)
         # print(labels)
-        metric.add_batch(predictions=logits, references=labels)
+        metric_acc.add_batch(predictions=logits, references=labels)
+        metric_f1.add_batch(predictions=logits, references=labels)
+        metric_mathew.add_batch(predictions=logits, references=labels)
 
-    final_score = metric.compute()
-    return final_score
+    final_score_acc = metric_acc.compute()
+    final_score_f1 = metric_f1.compute()
+    final_score_f1 = metric_mathew.compute()
+    return final_score_acc, final_score_f1, metric_mathew
 
 
 def evaluate(path_to_output_file, df_test):
@@ -281,13 +287,15 @@ def evaluate_main():
 
     print("Predicting on test data...")
     criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
-    score = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
+    score_acc, score_f1, score_mathew = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
                             # set the with_labels parameter to False if your want to get predictions on a dataset without labels
                             result_file=path_to_output_file)
 
     # evaluate the model accuracy
     # score = evaluate(path_to_output_file, df_test)
-    print(score)
+    print(score_acc)
+    print(score_f1)
+    print(score_mathew)
 
 
 if __name__ == "__main__":
