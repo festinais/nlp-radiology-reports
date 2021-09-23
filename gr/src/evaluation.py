@@ -1,13 +1,9 @@
-import csv
 import glob
 import os
 import random
-import re
-
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 from data.data_module import CustomDataset
 from datasets import load_metric
 from models.sentence_pair_classifier import SentencePairClassifier
@@ -23,8 +19,6 @@ from transformers import AutoModel
 # SimCLR
 from simclr.simclr import SimCLR
 from simclr.modules import NT_Xent
-
-import xml.etree.ElementTree as ET
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
