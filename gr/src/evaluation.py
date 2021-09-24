@@ -29,7 +29,17 @@ def get_data():
     dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
     # dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
 
-    train, _, validate, _, test, _ = train_valid_test_split(dataset, train_size=0.8, valid_size=0.2, test_size=0.2, target=None)
+    train_size = 0.8
+    valid_size = 0.2
+
+    dataset = pd.DataFrame(dataset)
+    train_index = int(len(dataset)) * train_size
+
+    train = dataset[0:train_index]
+    valid_index = int(len(dataset) * valid_size)
+
+    validate = dataset[train_index:train_index + valid_index]
+    test = dataset[train_index + valid_index:]
 
     # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     # train = split['train']
