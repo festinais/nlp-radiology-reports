@@ -25,6 +25,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def get_data():
     dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
+    dataset = pd.DataFrame(dataset)
 
     train, validate, test = np.split(dataset.sample(frac=1, random_state=42),
              [int(.6 * len(dataset)), int(.8 * len(dataset))])
