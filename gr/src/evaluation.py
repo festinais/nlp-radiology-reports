@@ -252,8 +252,8 @@ def main():
 
 def evaluate_main():
     # test the model
-    # device = torch.device("cpu")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     df_train, df_val, df_test = get_data()
 
     train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)
@@ -275,8 +275,8 @@ def evaluate_main():
 
     print()
     print("Loading the weights of the model...")
-    model.load_state_dict(torch.load(path_to_model))
-    # model.load_state_dict(torch.load(path_to_model, map_location=device))
+    # model.load_state_dict(torch.load(path_to_model))
+    model.load_state_dict(torch.load(path_to_model, map_location=device))
     model.to(device)
 
     print("Predicting on test data...")
