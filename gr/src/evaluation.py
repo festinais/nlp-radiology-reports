@@ -33,7 +33,7 @@ def get_data():
     valid_size = 0.2
 
     dataset = pd.DataFrame(dataset)
-    train_index = int(len(dataset)) * train_size
+    train_index = int(len(dataset) * train_size)
 
     train = dataset[0:train_index]
     valid_index = int(len(dataset) * valid_size)
