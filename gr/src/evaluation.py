@@ -29,29 +29,14 @@ def get_data():
     dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
     # dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
 
-    train_size = 0.8
-    valid_size = 0.2
-
-    dataset = pd.DataFrame(dataset)
-    train_index = int(len(dataset) * train_size)
-
-    train = dataset[0:train_index]
-    valid_index = int(len(dataset) * valid_size)
-
-    validate = dataset[train_index:train_index + valid_index]
-    test = dataset[train_index + valid_index:]
-
-    # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    # train = split['train']
-    # test = split['test']
-    #
-    # split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    # val = split_val['train']
+    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    train = split['train']
+    val = split['test']
 
     df_train = pd.DataFrame(train)
-    df_val = pd.DataFrame(validate)
-    df_test = pd.DataFrame(test)
-    # df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
+    df_val = pd.DataFrame(val)
+    df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
+    df_test = pd.DataFrame(df_test)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
     print('{0} {1} length'.format(df_val.shape, 'validation'))
@@ -267,8 +252,8 @@ def main():
 
 def evaluate_main():
     # test the model
-    device = torch.device("cpu")
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     df_train, df_val, df_test = get_data()
 
     train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)
