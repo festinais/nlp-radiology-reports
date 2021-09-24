@@ -16,6 +16,7 @@ from datasets import load_dataset
 from transformers import AutoTokenizer
 from transformers import AutoModel
 from fast_ml.model_development import train_valid_test_split
+from sklearn.metrics import top_k_accuracy_score
 
 
 # SimCLR
@@ -141,6 +142,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     #accuracies
     metric_acc = load_metric("accuracy")
     metric_f1 = load_metric("f1")
+    top_k_accuracies = []
 
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
 
@@ -185,9 +187,12 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         metric_acc.add_batch(predictions=logits, references=labels)
         metric_f1.add_batch(predictions=logits, references=labels)
 
+        top_k_accuracies.append(top_k_accuracy_score(logits, labels, k=3))
+
     final_score_acc = metric_acc.compute()
     final_score_f1 = metric_f1.compute(average=None)
-    return final_score_acc, final_score_f1
+    top_3_acc = sum(top_k_accuracies) / len(top_k_accuracies)
+    return final_score_acc, final_score_f1, top_3_acc
 
 
 def evaluate(path_to_output_file, df_test):
@@ -282,7 +287,7 @@ def evaluate_main():
 
     print("Predicting on test data...")
     criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
-    score_acc, score_f1 = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
+    score_acc, score_f1, top_3 = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
                             # set the with_labels parameter to False if your want to get predictions on a dataset without labels
                             result_file=path_to_output_file)
 
@@ -290,8 +295,9 @@ def evaluate_main():
     # score = evaluate(path_to_output_file, df_test)
     print(score_acc)
     print(score_f1)
+    print("top_3 accuracy", top_3)
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     evaluate_main()
