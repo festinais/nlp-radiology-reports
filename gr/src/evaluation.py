@@ -187,7 +187,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
 
         metric_acc.add_batch(predictions=logits, references=labels)
         metric_f1.add_batch(predictions=logits, references=labels)
-        top_k_accuracies.add(accuracy(logits, labels, topk=(3,)))
+        top_k_accuracies.append(accuracy(logits, labels, topk=(3,)))
 
         # top_k_accuracies.append(top_k_accuracy_score(logits, labels, k=3))
 
