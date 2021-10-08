@@ -191,7 +191,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         metric_f1.add_batch(predictions=logits, references=labels)
 
         # compute the top k predicted classes, per pixel:
-        _, tk = torch.topk(logits[0], 3, dim=1)
+        _, tk = torch.topk(logits, 3)
         # you now have k predictions per pixel, and you want that one of them will match the true labels y:
         correct_pixels = torch.eq(labels[:, None, ...], tk).any(dim=1)
         # take the mean of correct_pixels to get the overall average top-k accuracy:
