@@ -139,7 +139,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     net.eval()
     w = open(result_file, 'w')
 
-    #accuracies
+    # accuracies
     metric_acc = load_metric("accuracy")
     metric_f1 = load_metric("f1")
     top_k_accuracies = []
@@ -184,15 +184,34 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         loss, acc, logits, labels = criterion(z_i, z_j)
         # print(logits)
         # print(labels)
+
         metric_acc.add_batch(predictions=logits, references=labels)
         metric_f1.add_batch(predictions=logits, references=labels)
+        top_k_accuracies.add(accuracy(logits, labels, topk=(3,)))
 
         # top_k_accuracies.append(top_k_accuracy_score(logits, labels, k=3))
 
     final_score_acc = metric_acc.compute()
     final_score_f1 = metric_f1.compute(average=None)
-    # top_3_acc = sum(top_k_accuracies) / len(top_k_accuracies)
-    return final_score_acc, final_score_f1, final_score_f1
+    top_3_acc = sum(top_k_accuracies) / len(top_k_accuracies)
+    return final_score_acc, final_score_f1, top_3_acc
+
+
+def accuracy(output, target, topk=(3,)):
+    """Computes the accuracy over the k top predictions for the specified values of k"""
+    with torch.no_grad():
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        _, pred = output.topk(maxk, 1, True, True)
+        pred = pred.t()
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+        res = []
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+            res.append(correct_k.mul_(100.0 / batch_size))
+        return res
 
 
 def evaluate(path_to_output_file, df_test):
@@ -287,9 +306,10 @@ def evaluate_main():
 
     print("Predicting on test data...")
     criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
-    score_acc, score_f1, top_3 = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion, with_labels=True,
-                            # set the with_labels parameter to False if your want to get predictions on a dataset without labels
-                            result_file=path_to_output_file)
+    score_acc, score_f1, top_3 = test_prediction(net=model, device=device, dataloader=test_loader, criterion=criterion,
+                                                 with_labels=True,
+                                                 # set the with_labels parameter to False if your want to get predictions on a dataset without labels
+                                                 result_file=path_to_output_file)
 
     # evaluate the model accuracy
     # score = evaluate(path_to_output_file, df_test)
