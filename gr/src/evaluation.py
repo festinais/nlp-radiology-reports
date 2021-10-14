@@ -27,17 +27,19 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('csv', data_files='gr/data/data_no_dup.csv')
+    train = load_dataset('csv', data_files=['gr/data/data_train.csv'])
+    val = load_dataset('csv', data_files=['gr/data/data_val.csv'])
+    test = load_dataset('csv', data_files=['gr/data/data_test.csv'])
     # dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
-
-    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train = split['train']
-    val = split['test']
+    #
+    # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
+    # train = split['train']
+    # val = split['test']
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
-    df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
-    df_test = pd.DataFrame(df_test)
+    # df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
+    df_test = pd.DataFrame(test)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
     print('{0} {1} length'.format(df_val.shape, 'validation'))
