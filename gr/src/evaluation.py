@@ -27,11 +27,10 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    train = load_dataset('csv', data_files=['gr/data/data_train.csv'])
-    val = load_dataset('csv', data_files=['gr/data/data_val.csv'])
-    test = load_dataset('csv', data_files=['gr/data/data_test.csv'])
-    # dataset = load_dataset('csv', data_files='gr/data/mrpc_data.csv')
-    #
+    train = pd.read_csv('gr/data/data_train.csv')
+    val = pd.read_csv('gr/data/data_val.csv')
+    test = pd.read_csv('gr/data/data_test.csv')
+
     # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     # train = split['train']
     # val = split['test']
