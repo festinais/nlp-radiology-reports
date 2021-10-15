@@ -182,7 +182,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
                                  token_type_ids_2)
         # Computing loss
-        loss, acc, logits, labels = criterion(z_i, z_j)
+        loss, acc, logits, labels = criterion(h_i, h_j)
         print("preds", logits)
         print("len preds", len(logits))
         print("labels", labels)
@@ -327,5 +327,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     evaluate_main()
