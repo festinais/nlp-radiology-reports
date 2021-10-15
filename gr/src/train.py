@@ -129,7 +129,7 @@ def train_bert(net,
                 h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
                 # Computing loss
-                loss, acc, _, _ = criterion(z_i, z_j)
+                loss, acc, _, _ = criterion(h_i, h_j)
 
                 # loss = criterion(logits.squeeze(-1), labels.float())
                 loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
