@@ -298,7 +298,7 @@ def evaluate_main():
     path_to_output_file = get_yaml_parameter('path_to_output_file')
     model = SentencePairClassifier(get_yaml_parameter("bert_model"))
 
-    bert_layer = AutoModel.from_pretrained("albert-base-v2", return_dict=False)
+    bert_layer = AutoModel.from_pretrained(get_yaml_parameter("bert_model"), return_dict=False)
     configs = bert_layer.config
     model = SimCLR(model, 64, configs.hidden_size)
 
