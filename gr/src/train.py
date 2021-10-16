@@ -58,8 +58,6 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
             loss, acc, _, _ = criterion(h_i, h_j)
 
             mean_acc += acc
-            print("loss ", loss)
-            print("loss ", loss.item())
             mean_loss += loss.item()
             # seq, attn_masks, token_type_ids, labels = \
             #     seq.to(device), attn_masks.to(device), token_type_ids.to(device), labels.to(device)
