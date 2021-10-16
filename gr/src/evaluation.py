@@ -240,7 +240,7 @@ def main():
     # device = torch.device("cpu")
     net = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
-    bert_layer = AutoModel.from_pretrained("albert-base-v2", return_dict=False)
+    bert_layer = AutoModel.from_pretrained(get_yaml_parameter("bert_model"), return_dict=False)
     configs = bert_layer.config
 
     # initialize model
@@ -296,7 +296,7 @@ def evaluate_main():
         os.makedirs('result')
 
     path_to_output_file = get_yaml_parameter('path_to_output_file')
-    model = SentencePairClassifier(get_yaml_parameter("bert_model"))
+    model = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
     bert_layer = AutoModel.from_pretrained(get_yaml_parameter("bert_model"), return_dict=False)
     configs = bert_layer.config
