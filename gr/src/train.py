@@ -49,20 +49,15 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
                 device), token_type_ids_2.to(device)
 
             # Enables autocasting for the forward pass (model + loss)
+            with autocast():
+                # Obtaining the logits from the model
+                h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
+                                         token_type_ids_2)
+                # Computing loss
+                loss, acc, _, _ = criterion(h_i, h_j)
 
-            # Obtaining the logits from the model
-            h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
-                                     token_type_ids_2)
-
-            # Computing loss
-            loss, acc, _, _ = criterion(h_i, h_j)
-
-            mean_acc += acc
-            mean_loss += loss.item()
-            # seq, attn_masks, token_type_ids, labels = \
-            #     seq.to(device), attn_masks.to(device), token_type_ids.to(device), labels.to(device)
-            # logits = net(seq, attn_masks, token_type_ids)
-            # mean_loss += criterion(logits.squeeze(-1), labels.float()).item()
+                mean_acc += acc
+                mean_loss += loss.item()
             count += 1
 
     return mean_loss / count, mean_acc / count
