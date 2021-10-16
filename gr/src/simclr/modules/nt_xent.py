@@ -71,6 +71,8 @@ class NT_Xent(nn.Module):
         print("logits ", logits)
         print("labels ", labels)
         loss = self.criterion(logits, labels)
+        print("lossss: ", loss)
+        print("number of samples N ", N)
         loss /= N
         return loss, acc, pred_acc, labels_acc
 
