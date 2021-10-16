@@ -55,7 +55,7 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
                                      token_type_ids_2)
 
             # Computing loss
-            loss, acc, _, _ = criterion(h_i, h_j)
+            loss, acc, _, _ = criterion(z_i, z_j)
 
             mean_acc += acc
             mean_loss += loss.item()
