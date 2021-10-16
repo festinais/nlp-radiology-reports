@@ -183,10 +183,10 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
                                  token_type_ids_2)
         # Computing loss
         loss, acc, logits, labels = criterion(h_i, h_j)
-        print("preds", logits)
-        print("len preds", len(logits))
-        print("labels", labels)
-        print("len labels", len(labels))
+        # print("preds", logits)
+        # print("len preds", len(logits))
+        # print("labels", labels)
+        # print("len labels", len(labels))
 
         metric_acc.add_batch(predictions=logits, references=labels)
         metric_f1.add_batch(predictions=logits, references=labels)
