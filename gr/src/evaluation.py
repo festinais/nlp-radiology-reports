@@ -296,11 +296,11 @@ def evaluate_main():
         os.makedirs('result')
 
     path_to_output_file = get_yaml_parameter('path_to_output_file')
-    # model = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
-    #
-    # bert_layer = AutoModel.from_pretrained(get_yaml_parameter("bert_model"), return_dict=False)
-    # configs = bert_layer.config
-    # model = SimCLR(model, 64, configs.hidden_size)
+    model = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
+
+    bert_layer = AutoModel.from_pretrained(get_yaml_parameter("bert_model"), return_dict=False)
+    configs = bert_layer.config
+    model = SimCLR(model, 64, configs.hidden_size)
 
     # if torch.cuda.device_count() > 1:  # if multiple GPUs
     #     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -311,7 +311,7 @@ def evaluate_main():
     # model.load_state_dict(torch.load(path_to_model))
     # model.load_state_dict(torch.load(path_to_model, map_location=device))
 
-    model = torch.load(path_to_output_file)
+    # model = torch.load(path_to_output_file)
 
     model.eval()
     model.to(device)
