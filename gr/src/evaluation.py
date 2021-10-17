@@ -17,6 +17,7 @@ from transformers import AutoTokenizer
 from transformers import AutoModel
 from fast_ml.model_development import train_valid_test_split
 # from sklearn.metrics import top_k_accuracy_score
+from torch.cuda.amp import autocast, GradScaler
 
 
 # SimCLR
@@ -146,7 +147,8 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     top_k_accuracies = []
 
     tokenizer = AutoTokenizer.from_pretrained(get_yaml_parameter("bert_model"))
-
+    count = 0
+    mean_acc = 0
     for it, (section_ones, section_two, labels) in enumerate(tqdm(dataloader)):
         encoded_pairs_1 = tokenizer(list(section_ones),
                                     padding='max_length',  # Pad to max_length
@@ -178,15 +180,15 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
         input_ids_2, attn_masks_2, token_type_ids_2 = input_ids_2.to(device), attn_masks_2.to(
             device), token_type_ids_2.to(device)
 
-        # Obtaining the logits from the model
-        h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
-                                 token_type_ids_2)
-        # Computing loss
-        loss, acc, logits, labels = criterion(h_i, h_j)
-        # print("preds", logits)
-        # print("len preds", len(logits))
-        # print("labels", labels)
-        # print("len labels", len(labels))
+        # Enables autocasting for the forward pass (model + loss)
+        with autocast():
+            # Obtaining the logits from the model
+            h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
+                                     token_type_ids_2)
+            # Computing loss
+            loss, acc, logits, labels = criterion(h_i, h_j)
+            mean_acc += acc
+            count += 1
 
         metric_acc.add_batch(predictions=logits, references=labels)
         metric_f1.add_batch(predictions=logits, references=labels)
@@ -202,7 +204,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     final_score_acc = metric_acc.compute()
     final_score_f1 = metric_f1.compute(average=None)
     top_3_acc = sum(top_k_accuracies) / len(top_k_accuracies)
-    return final_score_acc, final_score_f1, top_3_acc
+    return final_score_acc, final_score_f1, mean_acc / count
 
 
 def accuracy(output, target, topk=(3,)):
@@ -331,5 +333,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     evaluate_main()
