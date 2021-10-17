@@ -50,15 +50,15 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
                 device), token_type_ids_2.to(device)
 
             # Enables autocasting for the forward pass (model + loss)
-            with autocast():
-                # Obtaining the logits from the model
-                h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
-                                         token_type_ids_2)
-                # Computing loss
-                loss, acc, logits, labels = criterion(h_i, h_j)
+            # with autocast():
+            # Obtaining the logits from the model
+            h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
+                                     token_type_ids_2)
+            # Computing loss
+            loss, acc, logits, labels = criterion(h_i, h_j)
 
-                mean_acc += acc
-                mean_loss += loss.item()
+            mean_acc += acc
+            mean_loss += loss.item()
             count += 1
 
     return mean_loss / count, mean_acc / count
@@ -120,30 +120,30 @@ def train_bert(net,
             input_ids_2, attn_masks_2, token_type_ids_2 = input_ids_2.to(device), attn_masks_2.to(device), token_type_ids_2.to(device)
 
             # Enables autocasting for the forward pass (model + loss)
-            with autocast():
-                # Obtaining the logits from the model
-                h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
+            # with autocast():
+            # Obtaining the logits from the model
+            h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
-                # Computing loss
-                loss, acc, _, _ = criterion(h_i, h_j)
+            # Computing loss
+            loss, acc, _, _ = criterion(h_i, h_j)
 
-                # loss = criterion(logits.squeeze(-1), labels.float())
-                loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
+            # loss = criterion(logits.squeeze(-1), labels.float())
+            loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
 
             # Backpropagating the gradients
             # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
-            scaler.scale(loss).backward()
-            # loss.backward()
+            # scaler.scale(loss).backward()
+            loss.backward()
 
             if (it + 1) % iters_to_accumulate == 0:
                 # Optimization step
                 # scaler.step() first unscales the gradients of the optimizer's assigned params.
                 # If these gradients do not contain infs or NaNs, opti.step() is then called,
                 # otherwise, opti.step() is skipped.
-                scaler.step(opti)
-                # opti.step()
+                # scaler.step(opti)
+                opti.step()
                 # Updates the scale for next iteration.
-                scaler.update()
+                # scaler.update()
                 # Adjust the learning rate based on the number of iterations.
                 lr_scheduler.step()
                 # Clear gradients

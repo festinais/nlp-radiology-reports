@@ -15,10 +15,6 @@ from utils.parameters import get_yaml_parameter
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from transformers import AutoModel
-from fast_ml.model_development import train_valid_test_split
-# from sklearn.metrics import top_k_accuracy_score
-from torch.cuda.amp import autocast, GradScaler
-
 
 # SimCLR
 from simclr.simclr import SimCLR
@@ -181,14 +177,14 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
             device), token_type_ids_2.to(device)
 
         # Enables autocasting for the forward pass (model + loss)
-        with autocast():
+        # with autocast():
             # Obtaining the logits from the model
-            h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
-                                     token_type_ids_2)
-            # Computing loss
-            loss, acc, logits, labels = criterion(h_i, h_j)
-            mean_acc += acc
-            count += 1
+        h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
+                                 token_type_ids_2)
+        # Computing loss
+        loss, acc, logits, labels = criterion(h_i, h_j)
+        mean_acc += acc
+        count += 1
 
         metric_acc.add_batch(predictions=logits, references=labels)
         metric_f1.add_batch(predictions=logits, references=labels)
@@ -333,5 +329,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     evaluate_main()
