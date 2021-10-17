@@ -313,7 +313,7 @@ def evaluate_main():
 
     # model = torch.load(path_to_output_file)
 
-    model.eval()
+    model.train()
     model.to(device)
 
     print("Predicting on test data...")
