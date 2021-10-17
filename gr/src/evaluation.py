@@ -261,8 +261,7 @@ def main():
     opti = AdamW(net.parameters(), lr=float(get_yaml_parameter("lr")), weight_decay=1e-2)
     num_warmup_steps = 0  # The number of steps for the warmup phase.
 
-    t_total = (len(
-        train_loader) // get_yaml_parameter("iters_to_accumulate")) * get_yaml_parameter(
+    t_total = (len(train_loader)) * get_yaml_parameter(
         "epochs")  # Necessary to take into account Gradient accumulation
     lr_scheduler = get_linear_schedule_with_warmup(optimizer=opti, num_warmup_steps=num_warmup_steps,
                                                    num_training_steps=t_total)
