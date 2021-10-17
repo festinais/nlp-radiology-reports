@@ -149,7 +149,7 @@ def train_bert(net,
                 # Clear gradients
                 opti.zero_grad()
 
-            running_loss += loss.item()
+            running_loss += loss
 
             if (it + 1) % print_every == 0:  # Print training loss information
                 print()
