@@ -311,9 +311,9 @@ def evaluate_main():
     # model.load_state_dict(torch.load(path_to_model))
     # model.load_state_dict(torch.load(path_to_model, map_location=device))
 
-    # model = torch.load(path_to_output_file)
+    model = torch.load(path_to_model)
 
-    model.train()
+    model.eval()
     model.to(device)
 
     print("Predicting on test data...")
