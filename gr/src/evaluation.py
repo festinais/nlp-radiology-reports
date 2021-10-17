@@ -204,7 +204,7 @@ def test_prediction(net, device, dataloader, criterion, with_labels=True, result
     final_score_acc = metric_acc.compute()
     final_score_f1 = metric_f1.compute(average=None)
     top_3_acc = sum(top_k_accuracies) / len(top_k_accuracies)
-    return final_score_acc, final_score_f1, mean_acc / count
+    return final_score_acc, final_score_f1, top_3_acc
 
 
 def accuracy(output, target, topk=(3,)):
