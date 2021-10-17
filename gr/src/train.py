@@ -57,8 +57,8 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
             # Computing loss
             loss, acc, logits, labels = criterion(h_i, h_j)
 
-            mean_acc += acc
-            mean_loss += loss
+            mean_acc += acc.item()
+            mean_loss += loss.item()
             count += 1
 
     return mean_loss / count, mean_acc / count
@@ -133,6 +133,7 @@ def train_bert(net,
             # Backpropagating the gradients
             # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
             # scaler.scale(loss).backward()
+            opti.zero_grad()
             loss.backward()
 
             # if (it + 1) % iters_to_accumulate == 0:
@@ -149,7 +150,7 @@ def train_bert(net,
             # Clear gradients
             opti.zero_grad()
 
-            running_loss += loss
+            running_loss += loss.item()
 
             if (it + 1) % print_every == 0:  # Print training loss information
                 print()
