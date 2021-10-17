@@ -58,7 +58,7 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
             loss, acc, logits, labels = criterion(h_i, h_j)
 
             mean_acc += acc
-            mean_loss += loss.item()
+            mean_loss += loss
             count += 1
 
     return mean_loss / count, mean_acc / count
