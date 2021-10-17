@@ -152,8 +152,6 @@ def train_bert(net,
             running_loss += loss
 
             if (it + 1) % print_every == 0:  # Print training loss information
-                print("print_every: ", print_every)
-                print("loss: ", loss)
                 print()
                 print("Iteration {}/{} of epoch {} complete. Loss : {}. Accuracy: {}"
                       .format(it + 1, nb_iterations, ep + 1, running_loss / print_every, acc))

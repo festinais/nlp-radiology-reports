@@ -67,8 +67,8 @@ class NT_Xent(nn.Module):
 
         pred_acc = torch.argmax(logits_acc, 1)
         acc = (labels_acc == pred_acc).sum().item() / logits_acc.size(0)
-        # print("preds: ", pred_acc)
-        # print("labels: ", labels_acc)
+        print("preds: ", pred_acc)
+        print("labels: ", labels_acc)
 
         loss = self.criterion(logits, labels)
         loss /= N
