@@ -55,7 +55,7 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
             h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2,
                                      token_type_ids_2)
             # Computing loss
-            loss, acc, logits, labels = criterion(h_i, h_j)
+            loss, acc, logits, labels = criterion(z_i, z_j)
 
             mean_acc += acc
             mean_loss += loss.item()
@@ -134,7 +134,7 @@ def train_bert(net,
             h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
             # Computing loss
-            loss, acc, _, _ = criterion(h_i, h_j)
+            loss, acc, _, _ = criterion(z_i, z_j)
 
             train_loss_set.append(loss.item())
 
