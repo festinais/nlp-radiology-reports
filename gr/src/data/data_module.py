@@ -19,6 +19,5 @@ class CustomDataset(Dataset):
         sent1 = str(self.data.loc[index, 'section_one'])
         sent2 = str(self.data.loc[index, 'section_two'])
         label = self.data.loc[index, 'label']
-
         return sent1, sent2, label
 

@@ -46,7 +46,7 @@ def get_data():
     df_test = pd.DataFrame(test)
 
     print('{0} {1} length'.format(df_train.shape, 'train'))
-    print('{0} {1} length'.format(df_val.shape, 'validation'))
+    print('{0} {1} length'.format(df_val.head(3), 'validation'))
     print('{0} {1} length'.format(df_test.shape, 'test'))
     return df_train, df_val, df_test
 
