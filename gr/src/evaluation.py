@@ -281,8 +281,7 @@ def main():
 
     t_total = (len(train_loader)) * get_yaml_parameter(
         "epochs")  # Necessary to take into account Gradient accumulation
-    lr_scheduler = get_linear_schedule_with_warmup(optimizer=opti, num_warmup_steps=num_warmup_steps,
-                                                   num_training_steps=t_total)
+    lr_scheduler = 0
 
     # train the model
     train_bert(net,
