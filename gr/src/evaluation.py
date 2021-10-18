@@ -15,6 +15,7 @@ from utils.parameters import get_yaml_parameter
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from transformers import AutoModel
+from pytorch_pretrained_bert import BertAdam, BertForSequenceClassification
 
 # SimCLR
 from simclr.simclr import SimCLR
@@ -239,8 +240,8 @@ def evaluate(path_to_output_file, df_test):
 
 def main():
     set_seed(1)
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    device = torch.device("cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
     net = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
     bert_layer = AutoModel.from_pretrained(get_yaml_parameter("bert_model"), return_dict=False)
@@ -263,8 +264,20 @@ def main():
     criterion = NT_Xent(get_yaml_parameter("bs"), 0.5, 1)
     # criterion = nn.BCEWithLogitsLoss()
 
-    opti = AdamW(net.parameters(), lr=float(get_yaml_parameter("lr")), weight_decay=1e-2)
-    num_warmup_steps = 0  # The number of steps for the warmup phase.
+    param_optimizer = list(net.named_parameters())
+    no_decay = ['bias', 'gamma', 'beta']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
+         'weight_decay_rate': 0.01},
+        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
+         'weight_decay_rate': 0.0}
+    ]
+
+    # This variable contains all of the hyperparemeter information our training loop needs
+    optimizer = BertAdam(optimizer_grouped_parameters, lr=2e-5, warmup=.1)
+
+    # opti = AdamW(net.parameters(), lr=float(get_yaml_parameter("lr")), weight_decay=1e-2)
+    # num_warmup_steps = 0  # The number of steps for the warmup phase.
 
     t_total = (len(train_loader)) * get_yaml_parameter(
         "epochs")  # Necessary to take into account Gradient accumulation
@@ -274,7 +287,7 @@ def main():
     # train the model
     train_bert(net,
                criterion,
-               opti,
+               optimizer,
                float(get_yaml_parameter("lr")),
                lr_scheduler,
                train_loader,
@@ -287,8 +300,8 @@ def main():
 
 def evaluate_main():
     # test the model
-    device = torch.device("cpu")
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     df_train, df_val, df_test = get_data()
 
     train_loader, val_loader, test_loader = load_train_val_data(df_train, df_val, df_test)

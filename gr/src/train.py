@@ -86,9 +86,16 @@ def train_bert(net,
     scaler = GradScaler()
     tokenizer = AutoTokenizer.from_pretrained(bert_model)
 
+    train_loss_set = []
     for ep in range(epochs):
         net.train()
         running_loss = 0.0
+
+        # Tracking variables
+        tr_loss = 0
+        tr_acc = 0
+        nb_tr_examples, nb_tr_steps = 0, 0
+
         for it, (section_ones, section_two, labels) in enumerate(tqdm(train_loader)):
 
             encoded_pairs_1 = tokenizer(list(section_ones),
@@ -122,42 +129,27 @@ def train_bert(net,
             # Enables autocasting for the forward pass (model + loss)
             # with autocast():
             # Obtaining the logits from the model
+            opti.zero_grad()
+
             h_i, h_j, z_i, z_j = net(input_ids_1, attn_masks_1, token_type_ids_1, input_ids_2, attn_masks_2, token_type_ids_2)
 
             # Computing loss
             loss, acc, _, _ = criterion(h_i, h_j)
 
-            # loss = criterion(logits.squeeze(-1), labels.float())
-            # loss = loss / iters_to_accumulate  # Normalize the loss because it is averaged
+            train_loss_set.append(loss.item())
 
-            # Backpropagating the gradients
-            # Scales loss.  Calls backward() on scaled loss to create scaled gradients.
-            # scaler.scale(loss).backward()
-            opti.zero_grad()
             loss.backward()
-
-            # if (it + 1) % iters_to_accumulate == 0:
-            # Optimization step
-            # scaler.step() first unscales the gradients of the optimizer's assigned params.
-            # If these gradients do not contain infs or NaNs, opti.step() is then called,
-            # otherwise, opti.step() is skipped.
-            # scaler.step(opti)
+            # Update parameters and take a step using the computed gradient
             opti.step()
-            # Updates the scale for next iteration.
-            # scaler.update()
-            # Adjust the learning rate based on the number of iterations.
-            lr_scheduler.step()
-            # Clear gradients
-            opti.zero_grad()
 
-            running_loss += loss.item()
+            # Update tracking variables
+            tr_loss += loss.item()
+            tr_acc += acc.item()
+            nb_tr_examples += input_ids_1.size(0)
+            nb_tr_steps += 1
 
-            if (it + 1) % print_every == 0:  # Print training loss information
-                print()
-                print("Iteration {}/{} of epoch {} complete. Loss : {}. Accuracy: {}"
-                      .format(it + 1, nb_iterations, ep + 1, running_loss / print_every, acc))
-
-                running_loss = 0.0
+        print("Train loss: {}".format(tr_loss / nb_tr_steps))
+        print("Train loss: {}".format(tr_acc / nb_tr_steps))
 
         val_loss, acc = evaluate_loss(net, device, criterion, val_loader, tokenizer)  # Compute validation loss
         print()
