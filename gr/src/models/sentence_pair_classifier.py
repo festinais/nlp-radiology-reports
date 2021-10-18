@@ -5,7 +5,7 @@ from transformers import AutoModel
 
 class SentencePairClassifier(nn.Module):
 
-    def __init__(self, bert_model="albert-base-v2", freeze_bert=False):
+    def __init__(self, bert_model="sentence-transformers/all-MiniLM-L6-v2", freeze_bert=False):
         super(SentencePairClassifier, self).__init__()
         #  Instantiating BERT-based model object
         self.bert_layer = AutoModel.from_pretrained(bert_model, return_dict=False)
