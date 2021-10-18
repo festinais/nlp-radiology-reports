@@ -57,7 +57,7 @@ def evaluate_loss(net, device, criterion, dataloader, tokenizer):
             # Computing loss
             loss, acc, logits, labels = criterion(h_i, h_j)
 
-            mean_acc += acc.item()
+            mean_acc += acc
             mean_loss += loss.item()
             count += 1
 
@@ -149,7 +149,7 @@ def train_bert(net,
             nb_tr_steps += 1
 
         print("Train loss: {}".format(tr_loss / nb_tr_steps))
-        print("Train loss: {}".format(tr_acc / nb_tr_steps))
+        print("Train acc: {}".format(tr_acc / nb_tr_steps))
 
         val_loss, acc = evaluate_loss(net, device, criterion, val_loader, tokenizer)  # Compute validation loss
         print()
