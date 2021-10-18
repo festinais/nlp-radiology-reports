@@ -144,7 +144,7 @@ def train_bert(net,
 
             # Update tracking variables
             tr_loss += loss.item()
-            tr_acc += acc.item()
+            tr_acc += acc
             nb_tr_examples += input_ids_1.size(0)
             nb_tr_steps += 1
 
