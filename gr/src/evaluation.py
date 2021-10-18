@@ -32,7 +32,7 @@ def get_data():
     # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     # train = split['train']
     # val = split['test']
-    df = pd.read_csv("gr/data_1/mrpc_data.csv'")
+    df = pd.read_csv("/home/festina/nlp-radiology-reports/gr/data_1/mrpc_data.csv'")
     # df = load_dataset('csv', data_files='gr/data_1/mrpc_data.csv')
 
     train, validate, test = np.split(df.sample(frac=1, random_state=42), [int(.6 * len(df)), int(.8 * len(df))])
