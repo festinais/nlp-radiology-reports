@@ -70,7 +70,7 @@ class NT_Xent(nn.Module):
         # print("preds: ", pred_acc)
         # print("labels: ", labels_acc)
 
-        loss = self.criterion(logits_acc, labels_acc)
+        loss = self.criterion(logits, labels)
         loss /= N
         return loss, acc, pred_acc, labels_acc
 
