@@ -25,21 +25,23 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    train = pd.read_csv('gr/data/data_train.csv')
-    val = pd.read_csv('gr/data/data_val.csv')
-    test = pd.read_csv('gr/data/data_test.csv')
+    # train = pd.read_csv('gr/data/data_train.csv')
+    # val = pd.read_csv('gr/data/data_val.csv')
+    # test = pd.read_csv('gr/data/data_test.csv')
 
     # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     # train = split['train']
     # val = split['test']
+    df = load_dataset('csv', data_files='gr/data_1/mrpc_data.csv')
 
-    # dataset = load_dataset('csv', data_files='gr/data_1/mrpc_data.csv')
+    train, validate, test = np.split(df.sample(frac=1, random_state=42), [int(.6 * len(df)), int(.8 * len(df))])
+
     # split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
     # train = split['train']
     # test = split['test']
 
     df_train = pd.DataFrame(train)
-    df_val = pd.DataFrame(val)
+    df_val = pd.DataFrame(validate)
     # df_test = pd.read_csv("gr/data/data_no_dup_test.csv", nrows=122)
     df_test = pd.DataFrame(test)
 
