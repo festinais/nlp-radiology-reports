@@ -45,9 +45,12 @@ def collate_fn(batch):
 
     token_ids, attn_masks, token_type_ids, labels = [], [], [], []
 
+    print("batch[0]: ", batch[0])
+
     for index, tuple in enumerate(batch):
         sent1 = tuple[0]
         sent2 = tuple[1]
+        print("sent1: ", sent1)
         labels.append(torch.tensor(tuple[2].values))
         # Tokenize the pair of sentences to get token ids, attention masks and token type ids
         encoded_pair = tokenizer(sent1, sent2,
@@ -90,10 +93,7 @@ def collate_fn(batch):
             sent4 = batch[index + 1][1]
             sent5 = batch[index + 1][1]
 
-        print("batch[0]: ", batch[0])
-        print("batch[1]: ", batch[1])
-        print("tuple[0]: ", tuple[0])
-        print("tuple[1]: ", tuple[1])
+    print("batch[0]: ", batch[0])
 
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
