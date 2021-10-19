@@ -88,6 +88,9 @@ def collate_fn(batch):
         else:
             sent4 = batch[index + 1][2]
         label = torch.tensor(0)
+        print("batchhhh: ", len(batch))
+        print("batch[1]:  ", batch[0][1])
+        print("batch[2]:  ", batch[0][2])
         print("batch4: ", sent4)
 
         labels.append(label)
