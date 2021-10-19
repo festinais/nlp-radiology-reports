@@ -69,6 +69,8 @@ def collate_fn(batch):
     for index, tuple in enumerate(batch):
         sent1 = tuple[0]
         sent2 = tuple[1]
+        print("sentence one: ", sent1)
+        print("sentence two: ", sent2)
         print("hellooo ", tuple[2])
         labels.append(torch.tensor(tuple[2].values))
         # Tokenize the pair of sentences to get token ids, attention masks and token type ids
