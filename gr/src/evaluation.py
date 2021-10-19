@@ -45,12 +45,10 @@ def collate_fn(batch):
 
     token_ids, attn_masks, token_type_ids, labels = [], [], [], []
 
-    print("batch[0]: ", batch[0])
-
     for index, tuple in enumerate(batch):
         sent1 = tuple[0]
         sent2 = tuple[1]
-        print("sent1: ", sent1)
+
         labels.append(torch.tensor(tuple[2].values))
         # Tokenize the pair of sentences to get token ids, attention masks and token type ids
         encoded_pair = tokenizer(sent1, sent2,
@@ -58,7 +56,8 @@ def collate_fn(batch):
                                  truncation=True,  # Truncate to max_length
                                  max_length=maxlen,
                                  return_tensors='pt')  # Return torch.Tensor objects
-
+        print("sent1: ", sent1)
+        print("sent2: ", sent2)
         token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
         attn_masks.append(encoded_pair['attention_mask'].squeeze(
             0))  # binary tensor with "0" for padded values and "1" for the other values
@@ -68,9 +67,9 @@ def collate_fn(batch):
         # negative sampling
         if index == len(batch) - 1:
             index = -1
-            sent3 = batch[index + 1][1]
+            sent3 = batch[index + 1][0]
         else:
-            sent3 = batch[index + 1][1]
+            sent3 = batch[index + 1][0]
         label = torch.tensor(0)
 
         labels.append(label)
@@ -83,17 +82,30 @@ def collate_fn(batch):
         token_ids.append(encoded_pair['input_ids'].squeeze(0))  # tensor of token ids
         attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
         token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
+        print("-------")
+        print("sent1: ", sent1)
+        print("sent3: ", sent3)
 
         # negative sampling
         if index == len(batch) - 1:
             index = -1
             sent4 = batch[index + 1][1]
-            sent5 = batch[index + 1][1]
         else:
             sent4 = batch[index + 1][1]
-            sent5 = batch[index + 1][1]
 
-    print("batch[0]: ", batch[0])
+        labels.append(label)
+        encoded_pair_new = tokenizer(sent2, sent4,
+                                 padding='max_length',  # Pad to max_length
+                                 truncation=True,  # Truncate to max_length
+                                 max_length=maxlen,
+                                 return_tensors='pt')  # Return torch.Tensor objects
+
+        token_ids.append(encoded_pair_new['input_ids'].squeeze(0))  # tensor of token ids
+        attn_masks.append(encoded_pair_new['attention_mask'].squeeze(0))
+        token_type_ids.append(encoded_pair_new['token_type_ids'].squeeze(0))
+        print("-------")
+        print("sent2: ", sent2)
+        print("sent4: ", sent4)
 
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
