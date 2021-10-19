@@ -88,6 +88,7 @@ def collate_fn(batch):
         else:
             sent4 = batch[index + 1][2]
         label = torch.tensor(0)
+        print("batch4: ", sent4)
 
         labels.append(label)
         encoded_pair_new = tokenizer(sent1, sent4,
