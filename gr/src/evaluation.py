@@ -90,8 +90,10 @@ def collate_fn(batch):
             sent4 = batch[index + 1][1]
             sent5 = batch[index + 1][1]
 
-        print("sent4: ", sent4)
-        print("sent5: ", sent5)
+        print("batch[0]: ", batch[0])
+        print("batch[1]: ", batch[1])
+        print("tuple[0]: ", tuple[0])
+        print("tuple[1]: ", tuple[1])
 
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
