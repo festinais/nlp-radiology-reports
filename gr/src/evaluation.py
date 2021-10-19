@@ -25,27 +25,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    documents = []
-    for filename in os.listdir('gr/data'):
-        if filename.endswith('.xml'):
-            root_node = ET.parse('gr/data/' + filename).getroot()
-            findings = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[2].text
-            impression = root_node.findall("MedlineCitation/Article/Abstract/AbstractText")[3].text
-            if findings != "" and impression != "" and findings is not None and impression is not None:
-                documents.append([findings, impression, '1'])
-
-    with open('gr/data/data.csv', 'w+') as output:
-        writer = csv.writer(output)
-        writer.writerow(['section_one', 'section_two', 'label'])
-        writer.writerows(documents)
-
-    dataset = load_dataset('csv', data_files='gr/data/data.csv')
-    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train = split['train']
-    test = split['test']
-
-    split_val = train.train_test_split(test_size=0.25, seed=1)  # split the original training data for validation
-    val = split_val['train']
+    train = pd.read_csv('gr/data/data_train.csv')
+    val = pd.read_csv('gr/data/data_val.csv')
+    test = pd.read_csv('gr/data/data_test.csv')
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
