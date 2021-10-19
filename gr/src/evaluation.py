@@ -103,9 +103,7 @@ def collate_fn(batch):
         token_ids.append(encoded_pair_new['input_ids'].squeeze(0))  # tensor of token ids
         attn_masks.append(encoded_pair_new['attention_mask'].squeeze(0))
         token_type_ids.append(encoded_pair_new['token_type_ids'].squeeze(0))
-        print("-------")
-        print("sent2: ", sent2)
-        print("sent4: ", sent4)
+
 
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
