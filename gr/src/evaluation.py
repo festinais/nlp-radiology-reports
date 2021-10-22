@@ -87,13 +87,13 @@ def collate_fn(batch):
 def load_train_val_data(df_train, df_val, df_test):
     # Creating instances of training and validation set
     print("Reading training data...")
-    train_set = CustomDataset(df_train)
+    train_set = CustomDataset(df_train, bert_model=get_yaml_parameter("bert_model"),)
 
     print("Reading validation data...")
-    val_set = CustomDataset(df_val)
+    val_set = CustomDataset(df_val, bert_model=get_yaml_parameter("bert_model"),)
 
     print("Reading test data...")
-    test_set = CustomDataset(df_test)
+    test_set = CustomDataset(df_test, bert_model=get_yaml_parameter("bert_model"),)
 
     # Creating instances of training and validation dataloaders
     train_loader = DataLoader(train_set, batch_size=get_yaml_parameter("bs"), collate_fn=collate_fn)
@@ -181,7 +181,7 @@ def evaluate(path_to_output_file, df_test):
 def main():
     set_seed(1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    net = SentencePairClassifier(get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
+    net = SentencePairClassifier(bert_model=get_yaml_parameter("bert_model"), freeze_bert=get_yaml_parameter("freeze_bert"))
 
     if torch.cuda.device_count() > 1:  # if multiple GPUs
         print("Let's use", torch.cuda.device_count(), "GPUs!")
