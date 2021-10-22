@@ -81,24 +81,6 @@ def collate_fn(batch):
         attn_masks.append(encoded_pair['attention_mask'].squeeze(0))
         token_type_ids.append(encoded_pair['token_type_ids'].squeeze(0))
 
-        # negative sampling
-        if index == len(batch) - 1:
-            index = -1
-            sent4 = batch[index + 1][1]
-        else:
-            sent4 = batch[index + 1][1]
-
-        labels.append(label)
-        encoded_pair_new = tokenizer(sent2, sent4,
-                                 padding='max_length',  # Pad to max_length
-                                 truncation=True,  # Truncate to max_length
-                                 max_length=maxlen,
-                                 return_tensors='pt')  # Return torch.Tensor objects
-
-        token_ids.append(encoded_pair_new['input_ids'].squeeze(0))  # tensor of token ids
-        attn_masks.append(encoded_pair_new['attention_mask'].squeeze(0))
-        token_type_ids.append(encoded_pair_new['token_type_ids'].squeeze(0))
-
     return torch.stack(token_ids), torch.stack(attn_masks), torch.stack(token_type_ids), torch.LongTensor(labels)
 
 
