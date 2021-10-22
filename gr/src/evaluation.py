@@ -25,9 +25,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    train = pd.read_csv('gr/data/data_train.csv')
+    train = pd.read_csv('gr/data/data_train_final.csv')
     val = pd.read_csv('gr/data/data_val.csv')
-    test = pd.read_csv('gr/data/data_test.csv')
+    test = pd.read_csv('gr/data/data_test_final.csv')
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
