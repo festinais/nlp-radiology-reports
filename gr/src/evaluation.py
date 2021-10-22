@@ -25,9 +25,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    train = pd.read_csv('gr/data/data_train.csv')
-    val = pd.read_csv('gr/data/data_val.csv')
-    test = pd.read_csv('gr/data/data_test.csv')
+    train = pd.read_csv('gr/data/data_train_nostop.csv')
+    val = pd.read_csv('gr/data/data_val_nostop.csv')
+    test = pd.read_csv('gr/data/data_test_nostop.csv')
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
@@ -251,5 +251,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     evaluate_main()
