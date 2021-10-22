@@ -25,12 +25,9 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def get_data():
-    dataset = load_dataset('csv', data_files='gr/data/data_train_new.csv')
-    split = dataset['train'].train_test_split(test_size=0.2, seed=1)  # split the original training data for validation
-    train = split['train']
-    val = split['test']
-
-    test = pd.read_csv('gr/data/data_no_dup_test.csv')
+    train = pd.read_csv('gr/data/data_train.csv')
+    val = pd.read_csv('gr/data/data_val.csv')
+    test = pd.read_csv('gr/data/data_test.csv')
 
     df_train = pd.DataFrame(train)
     df_val = pd.DataFrame(val)
@@ -254,5 +251,5 @@ def evaluate_main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
     evaluate_main()
