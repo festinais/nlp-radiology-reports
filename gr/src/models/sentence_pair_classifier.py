@@ -12,16 +12,7 @@ class SentencePairClassifier(nn.Module):
         self.bert_model = bert_model
         # Fix the hidden-state size of the encoder outputs
         # (If you want to add other pre-trained models here, search for the encoder output size)
-        if bert_model == "albert-base-v2":  # 12M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "albert-large-v2":  # 18M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "albert-xlarge-v2":  # 60M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "albert-xxlarge-v2":  # 235M parameters
-            hidden_size = self.bert_layer.config.hidden_size
-        elif bert_model == "bert-base-uncased": # 110M parameters
-            hidden_size = self.bert_layer.config.hidden_size
+        hidden_size = self.bert_layer.config.hidden_size
 
         # Freeze bert layers and only train the classification layer weights
         if freeze_bert:
