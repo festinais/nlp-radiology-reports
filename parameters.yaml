@@ -1,7 +1,7 @@
-bert_model: "dmis-lab/biobert-v1.1"  # 'albert-base-v2', 'albert-large-v2', 'albert-xlarge-v2', 'albert-xxlarge-v2', 'bert-base-uncased', ...
+bert_model: "albert-base-v2"  # 'albert-base-v2', 'albert-large-v2', 'albert-xlarge-v2', 'albert-xxlarge-v2', 'bert-base-uncased', ...
 freeze_bert: False  # if True, freeze the encoder weights and only update the classification layer weights
 maxlen: 128  # maximum length of the tokenized input sentence pair : if greater than "maxlen", the input is truncated and else if smaller, the input is padded
-bs: 32  # batch size
+bs: 16  # batch size
 iters_to_accumulate: 2  # the gradient accumulation adds gradients over an effective batch of size : bs * iters_to_accumulate. If set to "1", you get the usual batch size
 lr: 2e-5  # learning rate
 epochs: 4  # number of training epochs
