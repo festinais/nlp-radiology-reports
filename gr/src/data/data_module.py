@@ -44,8 +44,8 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         # Selecting sentence1 and sentence2 at the specified index in the data frame
-        sent1 = clean_text(str(self.data[['section_one']].iloc[[index]]))
-        sent2 = clean_text(str(self.data[['section_two']].iloc[[index]]))
+        # sent1 = clean_text(str(self.data[['section_one']].iloc[[index]]))
+        # sent2 = clean_text(str(self.data[['section_two']].iloc[[index]]))
 
         # sent1 = str(self.data[['section_one']].iloc[[index]]).replace("Der vorbeschriebene Befund ist", "")
         # sent1 = sent1.replace("Der vorbeschriebene Befund", "")
@@ -64,8 +64,8 @@ class CustomDataset(Dataset):
         # sent2 = sent2.replace("Mammographisch", "")
         # sent2 = sent2.replace("Drüsenparenchym mit", "")
 
-        # sent1 = str(self.data[['section_one']].iloc[[index]])
-        # sent2 = str(self.data[['section_two']].iloc[[index]])
+        sent1 = str(self.data[['section_one']].iloc[[index]])
+        sent2 = str(self.data[['section_two']].iloc[[index]])
 
         label = self.data[['label']].iloc[[index]]
         return sent1, sent2, label
